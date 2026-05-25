@@ -18,10 +18,13 @@ export default function ProductDetailPage() {
   const [error, setError] = useState('');
   const { addToCart, addToWishlist, removeFromWishlist, isInWishlist } = useAppContext();
   const [isWishlisted, setIsWishlisted] = useState(false);
+  const [isTogglingWishlist, setIsTogglingWishlist] = useState(false);
   const [quantity, setQuantity] = useState(1);
   const [customName, setCustomName] = useState('');
   const [viewers, setViewers] = useState(Math.floor(Math.random() * 50) + 5);
   const [showNotification, setShowNotification] = useState(false);
+  const [isAddingToCart, setIsAddingToCart] = useState(false);
+  const [wishlistError, setWishlistError] = useState('');
 
   useEffect(() => {
     let isActive = true;
@@ -57,6 +60,36 @@ export default function ProductDetailPage() {
       isActive = false;
     };
   }, [id, isInWishlist]);
+
+  // Ensure we reflect server-side wishlist state (in case context is stale)
+  useEffect(() => {
+    if (!product) return;
+
+    const checkServerWishlist = async () => {
+      try {
+        const savedUser = localStorage.getItem('user');
+        if (!savedUser) return;
+        const user = JSON.parse(savedUser) as { id?: string | number };
+        if (!user?.id) return;
+
+        const res = await fetch(`/api/wishlist?user_id=${Number(user.id)}`);
+        if (!res.ok) return;
+        const data = await res.json();
+
+        // Normalized response includes `products` or `wishlist` with product ids
+        const products = data?.products || data?.wishlist || [];
+        const has = Array.isArray(products)
+          ? products.some((p: any) => String(p.id ?? p.product_id ?? p.productId) === String(product.id))
+          : false;
+
+        setIsWishlisted(Boolean(has));
+      } catch (err) {
+        // silently ignore server check errors; UI will fall back to local context
+      }
+    };
+
+    checkServerWishlist();
+  }, [product]);
 
   useEffect(() => {
     if (!product) {
@@ -126,23 +159,131 @@ export default function ProductDetailPage() {
     ? Math.round(((product.originalPrice - product.price) / product.originalPrice) * 100)
     : 0;
 
-  const handleAddToCart = () => {
-    addToCart({
-      product,
-      quantity,
-      customization: customName ? { customName } : undefined,
-    });
-    setShowNotification(true);
-    setTimeout(() => setShowNotification(false), 3000);
+  const handleAddToCart = async () => {
+    try {
+      setIsAddingToCart(true);
+
+      const savedUser = localStorage.getItem('user');
+
+      if (!savedUser) {
+        throw new Error('Please sign in before adding items to cart.');
+      }
+
+      const user = JSON.parse(savedUser) as { id?: string | number };
+
+      if (!user?.id) {
+        throw new Error('Please sign in before adding items to cart.');
+      }
+
+      const requestBody: {
+        user_id: number;
+        product_id: number;
+        quantity: number;
+        customization?: string;
+      } = {
+        user_id: Number(user.id),
+        product_id: Number(product.id),
+        quantity,
+      };
+
+      if (customName.trim()) {
+        requestBody.customization = customName.trim();
+      }
+
+      const response = await fetch('/api/cart', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(requestBody),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok || !data?.success) {
+        throw new Error(data?.message || 'Failed to add product to cart');
+      }
+
+      addToCart({
+        product,
+        quantity,
+        customization: customName.trim() ? { customName: customName.trim() } : undefined,
+      });
+
+      window.dispatchEvent(new Event('cart-updated'));
+
+      setShowNotification(true);
+      setTimeout(() => setShowNotification(false), 3000);
+    } catch (addError) {
+      setError(addError instanceof Error ? addError.message : 'Failed to add product to cart');
+    } finally {
+      setIsAddingToCart(false);
+    }
   };
 
-  const handleWishlist = () => {
-    if (isWishlisted) {
-      removeFromWishlist(product.id);
-      setIsWishlisted(false);
-    } else {
+  const handleWishlist = async () => {
+    setWishlistError('');
+    setIsTogglingWishlist(true);
+
+    const savedUser = localStorage.getItem('user');
+
+    if (!savedUser) {
+      setError('Please sign in before adding items to wishlist.');
+      setIsTogglingWishlist(false);
+      return;
+    }
+
+    try {
+      const user = JSON.parse(savedUser) as { id?: string | number };
+
+      if (!user?.id) {
+        setError('Please sign in before adding items to wishlist.');
+        setIsTogglingWishlist(false);
+        return;
+      }
+
+      if (isWishlisted) {
+        // Remove from wishlist on server
+        const response = await fetch('/api/wishlist', {
+          method: 'DELETE',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ user_id: Number(user.id), product_id: product.id }),
+        });
+
+        const data = await response.json().catch(() => ({}));
+
+        if (!response.ok || (!data?.status && !data?.success && data?.success !== undefined)) {
+          throw new Error(data?.message || 'Failed to remove from wishlist');
+        }
+
+        removeFromWishlist(product.id);
+        setIsWishlisted(false);
+        setIsTogglingWishlist(false);
+        return;
+      }
+
+      // Add to wishlist
+      const formData = new FormData();
+      formData.append('user_id', String(user.id));
+      formData.append('product_id', product.id);
+
+      const response = await fetch('/api/wishlist', {
+        method: 'POST',
+        body: formData,
+      });
+
+      const data = await response.json();
+
+      if (!response.ok || (!data?.status && !data?.success)) {
+        throw new Error(data?.message || 'Failed to add product to wishlist');
+      }
+
       addToWishlist(product.id);
       setIsWishlisted(true);
+    } catch (err) {
+      setWishlistError(err instanceof Error ? err.message : 'Failed to toggle wishlist');
+    } finally {
+      setIsTogglingWishlist(false);
     }
   };
 
@@ -275,18 +416,19 @@ export default function ProductDetailPage() {
           <div className="space-y-3 mb-6">
             <button
               onClick={handleAddToCart}
-              disabled={!product.inStock}
+              disabled={!product.inStock || isAddingToCart}
               className={`w-full py-3 px-6 text-white font-semibold rounded flex items-center justify-center gap-2 transition ${product.inStock ? 'hover:opacity-90' : 'opacity-50 cursor-not-allowed'
                 }`}
               style={{ backgroundColor: product.inStock ? '#C4A57B' : '#ccc' }}
             >
               <ShoppingCart size={20} />
-              {product.inStock ? 'ADD TO CART' : 'SOLD OUT'}
+              {isAddingToCart ? 'ADDING...' : product.inStock ? 'ADD TO CART' : 'SOLD OUT'}
             </button>
 
             <div className="flex gap-3">
               <button
                 onClick={handleWishlist}
+                disabled={isTogglingWishlist}
                 className="flex-1 py-3 border-2 border-gray-300 font-semibold rounded hover:border-amber-600 transition flex items-center justify-center gap-2"
               >
                 <Heart
@@ -294,13 +436,14 @@ export default function ProductDetailPage() {
                   fill={isWishlisted ? '#C4A57B' : 'none'}
                   color={isWishlisted ? '#C4A57B' : 'currentColor'}
                 />
-                {isWishlisted ? 'WISHLISTED' : 'WISHLIST'}
+                {isTogglingWishlist ? 'PROCESSING...' : isWishlisted ? 'WISHLISTED' : 'WISHLIST'}
               </button>
               <button className="flex-1 py-3 border-2 border-gray-300 font-semibold rounded hover:border-gray-400 transition flex items-center justify-center gap-2">
                 <Share2 size={20} />
                 SHARE
               </button>
             </div>
+            {wishlistError ? <p className="mt-3 text-sm text-red-600">{wishlistError}</p> : null}
           </div>
 
           {/* Product Details */}

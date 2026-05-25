@@ -6,6 +6,7 @@ import { ShoppingCart, Heart, User, Search, Menu, X, ArrowRight, Sparkles } from
 import { useRouter } from 'next/navigation';
 import { useAppContext } from '@/lib/context';
 import { fetchProductSearch } from '@/lib/products';
+import { fetchUserCart } from '@/lib/cart';
 import { Product } from '@/lib/types';
 import { Card } from '@/components/ui/card';
 import { ScrollArea } from '@/components/ui/scroll-area';
@@ -17,11 +18,60 @@ export default function Header() {
   const [searchResults, setSearchResults] = useState<Product[]>([]);
   const [searchLoading, setSearchLoading] = useState(false);
   const [searchError, setSearchError] = useState('');
-  const { cart, wishlist } = useAppContext();
+  const { wishlist } = useAppContext();
+  const [cartCount, setCartCount] = useState(0);
   const router = useRouter();
 
-  const cartCount = cart.reduce((sum, item) => sum + item.quantity, 0);
   const wishlistCount = wishlist.length;
+
+  useEffect(() => {
+    let isActive = true;
+
+    const refreshCartCount = async () => {
+      try {
+        const savedUser = localStorage.getItem('user');
+
+        if (!savedUser) {
+          if (isActive) {
+            setCartCount(0);
+          }
+          return;
+        }
+
+        const user = JSON.parse(savedUser) as { id?: string | number };
+
+        if (!user?.id) {
+          if (isActive) {
+            setCartCount(0);
+          }
+          return;
+        }
+
+        const remoteCart = await fetchUserCart(String(user.id));
+
+        if (isActive) {
+          setCartCount(remoteCart.totalQuantity);
+        }
+      } catch {
+        if (isActive) {
+          setCartCount(0);
+        }
+      }
+    };
+
+    refreshCartCount();
+
+    const handleCartUpdate = () => {
+      refreshCartCount();
+    };
+
+    window.addEventListener('cart-updated', handleCartUpdate);
+
+    return () => {
+      isActive = false;
+      window.removeEventListener('cart-updated', handleCartUpdate);
+    };
+  }, []);
 
   useEffect(() => {
     let isActive = true;
@@ -178,7 +228,7 @@ export default function Header() {
               <Heart size={18} className="sm:w-5 sm:h-5" />
               {wishlistCount > 0 && (
                 <span
-                  className="absolute -top-1 -right-1 text-white text-xs font-bold w-4 h-4 sm:w-5 sm:h-5 rounded-full flex items-center justify-center text-xs"
+                  className="absolute -top-1 -right-1 text-white text-xs font-bold w-4 h-4 sm:w-5 sm:h-5 rounded-full flex items-center justify-center"
                   style={{ backgroundColor: '#C4A57B' }}
                 >
                   {wishlistCount}
@@ -213,7 +263,7 @@ export default function Header() {
         {isSearchOpen && (
           <div className="absolute left-3 right-3 sm:left-4 sm:right-4 top-full z-50 -mt-1 sm:-mt-2">
             <div className="rounded-2xl border border-gray-200 bg-white shadow-[0_18px_48px_rgba(0,0,0,0.12)] overflow-hidden">
-              <div className="flex items-center gap-2 px-3 sm:px-4 py-3 bg-gradient-to-r from-amber-50 to-white">
+              <div className="flex items-center gap-2 px-3 sm:px-4 py-3 bg-linear-to-r from-amber-50 to-white">
                 <Search size={16} className="text-amber-700 shrink-0" />
                 <input
                   type="text"
@@ -292,7 +342,7 @@ export default function Header() {
                           onClick={() => handleResultClick(product.id)}
                           className="group flex w-full items-center gap-3 rounded-xl border border-transparent px-3 py-3 text-left transition hover:border-amber-200 hover:bg-amber-50/60"
                         >
-                          <div className="h-16 w-16 flex-shrink-0 overflow-hidden rounded-xl bg-gray-100 ring-1 ring-gray-200">
+                          <div className="h-16 w-16 shrink-0 overflow-hidden rounded-xl bg-gray-100 ring-1 ring-gray-200">
                             <img
                               src={product.image}
                               alt={product.name}

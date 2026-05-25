@@ -1,35 +1,119 @@
 'use client';
 
-import { useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { useAppContext } from '@/lib/context';
 import Link from 'next/link';
-import { TAX_RATE, STANDARD_SHIPPING, SHIPPING_FREE_THRESHOLD } from '@/lib/constants';
 import { ShoppingBag } from 'lucide-react';
+import { fetchUserCart, RemoteCartItem } from '@/lib/cart';
+import { UserProfile } from '@/lib/types';
+
+type AddressRecord = {
+  id: number;
+  user_id: number;
+  name: string;
+  phone: string;
+  address: string;
+  city: string;
+  state: string;
+  pincode: string;
+};
+
+type AddressResponse = {
+  status?: boolean;
+  addresses?: AddressRecord[];
+  message?: string;
+};
 
 export default function CheckoutPage() {
   const { cart, clearCart } = useAppContext();
   const [step, setStep] = useState<'shipping' | 'payment' | 'review'>('shipping');
   const [isProcessing, setIsProcessing] = useState(false);
   const [orderPlaced, setOrderPlaced] = useState(false);
+  const [remoteCart, setRemoteCart] = useState<RemoteCartItem[]>([]);
+  const [loadingCart, setLoadingCart] = useState(true);
+  const [cartError, setCartError] = useState('');
+  const [savedAddress, setSavedAddress] = useState<AddressRecord | null>(null);
 
   const [formData, setFormData] = useState({
     email: '',
     firstName: '',
-    lastName: '',
     address: '',
     city: '',
     state: '',
     zipCode: '',
-    country: 'United States',
     cardNumber: '',
     cardExpiry: '',
     cardCVC: '',
   });
 
-  const subtotal = cart.reduce((sum, item) => sum + item.product.price * item.quantity, 0);
-  const shipping = subtotal > SHIPPING_FREE_THRESHOLD ? 0 : STANDARD_SHIPPING;
-  const tax = subtotal * TAX_RATE;
-  const total = subtotal + shipping + tax;
+  const applyUserProfile = useCallback((user: UserProfile, address?: AddressRecord | null) => {
+    setFormData((prev) => ({
+      ...prev,
+      email: user.email || prev.email,
+      firstName: (user.name || '').trim() || prev.firstName,
+      address: address?.address || user.address || prev.address,
+      city: address?.city || prev.city,
+      state: address?.state || prev.state,
+      zipCode: address?.pincode || prev.zipCode,
+    }));
+  }, []);
+
+  const loadCart = useCallback(async () => {
+    try {
+      setLoadingCart(true);
+      setCartError('');
+
+      const savedUser = localStorage.getItem('user');
+
+      if (!savedUser) {
+        setRemoteCart([]);
+        return;
+      }
+
+      const user = JSON.parse(savedUser) as UserProfile;
+
+      if (!user?.id) {
+        setRemoteCart([]);
+        setCartError('No valid user id found in localStorage.');
+        return;
+      }
+
+      const remote = await fetchUserCart(String(user.id));
+      setRemoteCart(remote.items);
+
+      applyUserProfile(user, null);
+
+
+      try {
+        const addressResponse = await fetch(`/api/address?user_id=${encodeURIComponent(String(user.id))}`, {
+          cache: 'no-store',
+        });
+
+        const addressData = (await addressResponse.json()) as AddressResponse;
+
+        if (addressResponse.ok && addressData.status) {
+          const nextAddress = Array.isArray(addressData.addresses) ? addressData.addresses[0] ?? null : null;
+          setSavedAddress(nextAddress);
+          applyUserProfile(user, nextAddress);
+        }
+      } catch {
+        setSavedAddress(null);
+      }
+    } catch {
+      setRemoteCart([]);
+      setCartError('Failed to load your cart.');
+    } finally {
+      setLoadingCart(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    loadCart();
+  }, [loadCart]);
+
+  const visibleCart = remoteCart.length > 0 ? remoteCart : cart;
+  const subtotal = visibleCart.reduce((sum, item) => sum + item.product.price * item.quantity, 0);
+  const total = subtotal;
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
@@ -46,7 +130,7 @@ export default function CheckoutPage() {
     }, 2000);
   };
 
-  if (cart.length === 0 && !orderPlaced) {
+  if (!loadingCart && visibleCart.length === 0 && !orderPlaced) {
     return (
       <div className="max-w-7xl mx-auto px-4 py-16 md:py-24">
         <div className="text-center">
@@ -60,6 +144,24 @@ export default function CheckoutPage() {
               CONTINUE SHOPPING
             </button>
           </Link>
+        </div>
+      </div>
+    );
+  }
+
+  if (loadingCart && !orderPlaced) {
+    return (
+      <div className="max-w-7xl mx-auto px-4 py-16 md:py-24">
+        <div className="space-y-4">
+          <div className="h-10 w-48 rounded bg-gray-100 animate-pulse" />
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            <div className="lg:col-span-2 space-y-4">
+              {Array.from({ length: 2 }).map((_, index) => (
+                <div key={index} className="h-32 rounded-lg bg-gray-100 animate-pulse" />
+              ))}
+            </div>
+            <div className="h-80 rounded-lg bg-gray-100 animate-pulse" />
+          </div>
         </div>
       </div>
     );
@@ -102,19 +204,18 @@ export default function CheckoutPage() {
             {(['shipping', 'payment', 'review'] as const).map((s, idx) => (
               <div key={s} className="flex items-center gap-2">
                 <div
-                  className={`w-8 h-8 rounded-full flex items-center justify-center font-semibold text-sm ${
-                    step === s
-                      ? 'text-white'
-                      : idx < (['shipping', 'payment', 'review'] as const).indexOf(step)
+                  className={`w-8 h-8 rounded-full flex items-center justify-center font-semibold text-sm ${step === s
+                    ? 'text-white'
+                    : idx < (['shipping', 'payment', 'review'] as const).indexOf(step)
                       ? 'bg-green-500 text-white'
                       : 'bg-gray-200 text-gray-600'
-                  }`}
+                    }`}
                   style={
                     step === s
                       ? { backgroundColor: '#C4A57B' }
                       : idx < (['shipping', 'payment', 'review'] as const).indexOf(step)
-                      ? { backgroundColor: '#4CAF50' }
-                      : {}
+                        ? { backgroundColor: '#4CAF50' }
+                        : {}
                   }
                 >
                   {idx < (['shipping', 'payment', 'review'] as const).indexOf(step) ? '✓' : idx + 1}
@@ -129,26 +230,15 @@ export default function CheckoutPage() {
             <div className="space-y-4 mb-8">
               <h2 className="text-2xl font-bold mb-4">Shipping Information</h2>
 
-              <div className="grid grid-cols-2 gap-4">
-                <input
-                  type="text"
-                  name="firstName"
-                  placeholder="First Name"
-                  value={formData.firstName}
-                  onChange={handleInputChange}
-                  className="px-4 py-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-amber-600"
-                  required
-                />
-                <input
-                  type="text"
-                  name="lastName"
-                  placeholder="Last Name"
-                  value={formData.lastName}
-                  onChange={handleInputChange}
-                  className="px-4 py-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-amber-600"
-                  required
-                />
-              </div>
+              <input
+                type="text"
+                name="firstName"
+                placeholder="Name"
+                value={formData.firstName}
+                onChange={handleInputChange}
+                className="w-full px-4 py-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-amber-600"
+                required
+              />
 
               <input
                 type="email"
@@ -201,16 +291,6 @@ export default function CheckoutPage() {
                   className="px-4 py-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-amber-600"
                   required
                 />
-                <select
-                  name="country"
-                  value={formData.country}
-                  onChange={handleInputChange}
-                  className="px-4 py-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-amber-600"
-                >
-                  <option>United States</option>
-                  <option>Canada</option>
-                  <option>United Kingdom</option>
-                </select>
               </div>
 
               <button
@@ -235,7 +315,7 @@ export default function CheckoutPage() {
                 value={formData.cardNumber}
                 onChange={handleInputChange}
                 className="w-full px-4 py-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-amber-600"
-                maxLength="19"
+                maxLength={19}
                 required
               />
 
@@ -247,7 +327,7 @@ export default function CheckoutPage() {
                   value={formData.cardExpiry}
                   onChange={handleInputChange}
                   className="px-4 py-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-amber-600"
-                  maxLength="5"
+                  maxLength={5}
                   required
                 />
                 <input
@@ -257,7 +337,7 @@ export default function CheckoutPage() {
                   value={formData.cardCVC}
                   onChange={handleInputChange}
                   className="px-4 py-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-amber-600"
-                  maxLength="4"
+                  maxLength={4}
                   required
                 />
               </div>
@@ -289,7 +369,7 @@ export default function CheckoutPage() {
                 <div>
                   <p className="text-sm text-gray-600 mb-1">Shipping To</p>
                   <p className="font-semibold">
-                    {formData.firstName} {formData.lastName}
+                    {formData.firstName}
                   </p>
                   <p className="text-sm text-gray-600">
                     {formData.address}, {formData.city}, {formData.state} {formData.zipCode}
@@ -330,13 +410,13 @@ export default function CheckoutPage() {
             <h2 className="text-xl font-bold mb-6">Order Summary</h2>
 
             <div className="space-y-3 mb-6 max-h-64 overflow-y-auto">
-              {cart.map((item) => (
+              {visibleCart.map((item) => (
                 <div key={item.product.id} className="flex justify-between text-sm pb-3 border-b">
                   <div>
                     <p className="font-medium">{item.product.name}</p>
                     <p className="text-gray-600 text-xs">Qty: {item.quantity}</p>
-                    {item.customization?.customName && (
-                      <p className="text-xs text-amber-700">Custom: {item.customization.customName}</p>
+                    {typeof item.customization === 'string' && item.customization.trim() && (
+                      <p className="text-xs text-amber-700">Custom: {item.customization}</p>
                     )}
                   </div>
                   <p className="font-semibold">₹{(item.product.price * item.quantity).toFixed(2)}</p>
@@ -344,18 +424,12 @@ export default function CheckoutPage() {
               ))}
             </div>
 
+            {cartError ? <p className="mb-4 text-xs text-amber-700">{cartError}</p> : null}
+
             <div className="space-y-3 text-sm border-t pt-4">
               <div className="flex justify-between">
                 <span>Subtotal</span>
                 <span>₹{subtotal.toFixed(2)}</span>
-              </div>
-              <div className="flex justify-between">
-                <span>Shipping</span>
-                <span>{shipping === 0 ? 'FREE' : `₹${shipping.toFixed(2)}`}</span>
-              </div>
-              <div className="flex justify-between">
-                <span>Tax (8%)</span>
-                <span>₹{tax.toFixed(2)}</span>
               </div>
               <div className="flex justify-between text-base font-bold border-t pt-3">
                 <span>Total</span>

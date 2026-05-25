@@ -22,6 +22,20 @@ export interface ProductsApiResponse {
   message?: string;
 }
 
+export interface LatestProductsApiResponse {
+  status: boolean;
+  total?: number;
+  products?: ApiProduct[];
+  message?: string;
+}
+
+export interface BestSellerProductsApiResponse {
+  status: boolean;
+  total?: number;
+  products?: ApiProduct[];
+  message?: string;
+}
+
 export interface ProductDetailApiResponse {
   status: boolean;
   product?: ApiProduct;
@@ -75,6 +89,42 @@ export async function fetchProducts(): Promise<Product[]> {
 
   if (!data.status || !Array.isArray(data.products)) {
     throw new Error(data.message || 'Invalid product response');
+  }
+
+  return data.products.map(mapApiProductToProduct);
+}
+
+export async function fetchLatestProducts(): Promise<Product[]> {
+  const response = await fetch('/api/products/latest', {
+    cache: 'no-store',
+  });
+
+  if (!response.ok) {
+    throw new Error('Failed to load latest products');
+  }
+
+  const data = (await response.json()) as LatestProductsApiResponse;
+
+  if (!data.status || !Array.isArray(data.products)) {
+    throw new Error(data.message || 'Invalid latest products response');
+  }
+
+  return data.products.map(mapApiProductToProduct);
+}
+
+export async function fetchBestSellerProducts(): Promise<Product[]> {
+  const response = await fetch('/api/products/best-seller', {
+    cache: 'no-store',
+  });
+
+  if (!response.ok) {
+    throw new Error('Failed to load best sellers');
+  }
+
+  const data = (await response.json()) as BestSellerProductsApiResponse;
+
+  if (!data.status || !Array.isArray(data.products)) {
+    throw new Error(data.message || 'Invalid best sellers response');
   }
 
   return data.products.map(mapApiProductToProduct);

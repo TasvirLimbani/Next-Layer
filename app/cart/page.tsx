@@ -1,18 +1,125 @@
 'use client';
 
-import { useAppContext } from '@/lib/context';
+import { useCallback, useEffect, useState } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { Trash2, ShoppingBag } from 'lucide-react';
 import { TAX_RATE, STANDARD_SHIPPING, SHIPPING_FREE_THRESHOLD } from '@/lib/constants';
+import { fetchUserCart, RemoteCartItem } from '@/lib/cart';
+import { UserProfile } from '@/lib/types';
 
 export default function CartPage() {
-  const { cart, removeFromCart, updateCartItem } = useAppContext();
+  const [cart, setCart] = useState<RemoteCartItem[]>([]);
+  const [grandTotal, setGrandTotal] = useState(0);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
+  const [deletingId, setDeletingId] = useState('');
 
-  const subtotal = cart.reduce((sum, item) => sum + item.product.price * item.quantity, 0);
-  const shipping = subtotal > SHIPPING_FREE_THRESHOLD ? 0 : STANDARD_SHIPPING;
-  const tax = subtotal * TAX_RATE;
-  const total = subtotal + shipping + tax;
+  const loadCart = useCallback(async () => {
+    let isActive = true;
+
+    try {
+      const savedUser = localStorage.getItem('user');
+
+      if (!savedUser) {
+        if (isActive) {
+          setCart([]);
+          setGrandTotal(0);
+          setError('No user found in localStorage.');
+        }
+        return;
+      }
+
+      const user = JSON.parse(savedUser) as UserProfile;
+
+      if (!user?.id) {
+        if (isActive) {
+          setCart([]);
+          setGrandTotal(0);
+          setError('No valid user id found in localStorage.');
+        }
+        return;
+      }
+
+      const remoteCart = await fetchUserCart(String(user.id));
+
+      if (isActive) {
+        setCart(remoteCart.items);
+        setGrandTotal(remoteCart.grandTotal);
+        setError('');
+      }
+    } catch {
+      if (isActive) {
+        setCart([]);
+        setGrandTotal(0);
+        setError('Failed to load your cart.');
+      }
+    } finally {
+      if (isActive) {
+        setLoading(false);
+      }
+    }
+
+    return () => {
+      isActive = false;
+    };
+  }, []);
+
+  useEffect(() => {
+    loadCart();
+  }, [loadCart]);
+
+  const handleDelete = async (cartId: string) => {
+    try {
+      setDeletingId(cartId);
+
+      const response = await fetch('/api/cart', {
+        method: 'DELETE',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ id: Number(cartId) }),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok || !data?.success) {
+        throw new Error(data?.message || 'Failed to delete cart item');
+      }
+
+      window.dispatchEvent(new Event('cart-updated'));
+
+      setLoading(true);
+      await loadCart();
+    } catch (deleteError) {
+      setError(deleteError instanceof Error ? deleteError.message : 'Failed to delete cart item');
+    } finally {
+      setDeletingId('');
+    }
+  };
+
+  const subtotal = cart.reduce((sum, item) => sum + item.totalAmount, 0);
+  const shipping = grandTotal > SHIPPING_FREE_THRESHOLD ? 0 : STANDARD_SHIPPING;
+  const tax = (grandTotal || subtotal) * TAX_RATE;
+  const total = grandTotal || subtotal + shipping + tax;
+
+  if (loading) {
+    return (
+      <div className="max-w-7xl mx-auto px-4 py-16 md:py-24">
+        <div className="space-y-4">
+          <div className="h-10 w-48 rounded bg-gray-100 animate-pulse" />
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            <div className="lg:col-span-2 space-y-4">
+              {Array.from({ length: 2 }).map((_, index) => (
+                <div key={index} className="h-32 rounded-lg bg-gray-100 animate-pulse" />
+              ))}
+            </div>
+            <div className="h-80 rounded-lg bg-gray-100 animate-pulse" />
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   if (cart.length === 0) {
     return (
@@ -31,6 +138,7 @@ export default function CartPage() {
               CONTINUE SHOPPING
             </button>
           </Link>
+          {error && <p className="mt-4 text-sm text-amber-700">{error}</p>}
         </div>
       </div>
     );
@@ -39,17 +147,16 @@ export default function CartPage() {
   return (
     <div className="max-w-7xl mx-auto px-4 py-12">
       <h1 className="text-4xl font-bold mb-8">Shopping Cart</h1>
+      {error && <p className="mb-6 text-sm text-amber-700">{error}</p>}
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-        {/* Cart Items */}
         <div className="lg:col-span-2">
           <div className="space-y-4">
             {cart.map((item) => (
               <div
-                key={item.product.id}
+                key={item.cartId}
                 className="border border-gray-200 rounded-lg p-4 flex gap-4 hover:shadow-sm transition"
               >
-                {/* Image */}
                 <div className="relative w-24 h-24 bg-gray-100 rounded-lg flex-shrink-0">
                   <Image
                     src={item.product.image}
@@ -59,7 +166,6 @@ export default function CartPage() {
                   />
                 </div>
 
-                {/* Product Info */}
                 <div className="flex-1 min-w-0">
                   <Link href={`/shop/${item.product.id}`}>
                     <h3 className="font-semibold hover:text-amber-700 transition line-clamp-1">
@@ -68,47 +174,31 @@ export default function CartPage() {
                   </Link>
                   <p className="text-sm text-gray-600 mb-2">{item.product.vendor}</p>
 
-                  {item.customization?.customName && (
+                  {item.customization && (
                     <p className="text-xs bg-gray-100 px-2 py-1 rounded inline-block mb-2">
-                      Customized: {item.customization.customName}
+                      Customized: {item.customization}
                     </p>
                   )}
 
                   <p className="font-semibold text-gray-900">₹{item.product.price.toFixed(2)}</p>
                 </div>
 
-                {/* Quantity and Total */}
                 <div className="flex flex-col items-end justify-between">
+                  <div className="flex items-center gap-3 text-sm text-gray-600">
+                    <span className="font-semibold">Qty</span>
+                    <span className="w-6 text-center font-semibold text-gray-900">{item.quantity}</span>
+                  </div>
+
                   <button
-                    onClick={() => removeFromCart(item.product.id)}
-                    className="p-1 hover:bg-red-50 rounded transition text-red-600"
+                    onClick={() => handleDelete(item.cartId)}
+                    className="p-1 hover:bg-red-50 rounded transition text-red-600 disabled:opacity-50"
+                    disabled={deletingId === item.cartId}
+                    aria-label={`Delete ${item.product.name} from cart`}
                   >
                     <Trash2 size={18} />
                   </button>
 
-                  <div className="flex items-center gap-3">
-                    <button
-                      onClick={() =>
-                        updateCartItem(item.product.id, Math.max(1, item.quantity - 1))
-                      }
-                      className="px-2 py-1 border border-gray-300 rounded hover:bg-gray-50"
-                    >
-                      −
-                    </button>
-                    <span className="w-6 text-center font-semibold">{item.quantity}</span>
-                    <button
-                      onClick={() =>
-                        updateCartItem(item.product.id, item.quantity + 1)
-                      }
-                      className="px-2 py-1 border border-gray-300 rounded hover:bg-gray-50"
-                    >
-                      +
-                    </button>
-                  </div>
-
-                  <p className="font-bold">
-                    ₹{(item.product.price * item.quantity).toFixed(2)}
-                  </p>
+                  <p className="font-bold">₹{item.totalAmount.toFixed(2)}</p>
                 </div>
               </div>
             ))}
@@ -121,7 +211,6 @@ export default function CartPage() {
           </Link>
         </div>
 
-        {/* Order Summary */}
         <div className="lg:col-span-1">
           <div className="border border-gray-200 rounded-lg p-6 bg-gray-50 sticky top-24">
             <h2 className="text-xl font-bold mb-6">Order Summary</h2>
@@ -135,11 +224,7 @@ export default function CartPage() {
               <div className="flex justify-between">
                 <span className="text-gray-600">Shipping</span>
                 <span className="font-semibold">
-                  {shipping === 0 ? (
-                    <span className="text-green-600">FREE</span>
-                  ) : (
-                    `₹${shipping.toFixed(2)}`
-                  )}
+                  {shipping === 0 ? <span className="text-green-600">FREE</span> : `₹${shipping.toFixed(2)}`}
                 </span>
               </div>
 
