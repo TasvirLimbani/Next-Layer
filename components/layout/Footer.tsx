@@ -29,9 +29,9 @@ export default function Footer() {
               <a href="#" className="hover:text-amber-600 transition">
                 <Facebook size={18} />
               </a>
-              <a href="#" className="hover:text-amber-600 transition">
+              {/* <a href="#" className="hover:text-amber-600 transition">
                 <Twitter size={18} />
-              </a>
+              </a> */}
               <a href="#" className="hover:text-amber-600 transition">
                 <Instagram size={18} />
               </a>
@@ -43,25 +43,21 @@ export default function Footer() {
             <h4 className="font-semibold mb-4">SHOP</h4>
             <ul className="space-y-2 text-sm">
               <li>
+                <Link href="/" className="text-gray-400 hover:text-amber-600 transition">
+                  Home
+                </Link>
+              </li>
+              <li>
                 <Link href="/shop" className="text-gray-400 hover:text-amber-600 transition">
                   All Products
                 </Link>
               </li>
               <li>
-                <Link href="/shop?category=Miniatures" className="text-gray-400 hover:text-amber-600 transition">
-                  Miniatures
+                <Link href="/filaments" className="text-gray-400 hover:text-amber-600 transition">
+                  Filaments
                 </Link>
               </li>
-              <li>
-                <Link href="/shop?category=Home%20Decor" className="text-gray-400 hover:text-amber-600 transition">
-                  Home Decor
-                </Link>
-              </li>
-              <li>
-                <Link href="/shop?category=Jewelry" className="text-gray-400 hover:text-amber-600 transition">
-                  Jewelry
-                </Link>
-              </li>
+
             </ul>
           </div>
 
@@ -70,7 +66,7 @@ export default function Footer() {
             <h4 className="font-semibold mb-4">INFORMATION</h4>
             <ul className="space-y-2 text-sm">
               <li>
-                <Link href="#" className="text-gray-400 hover:text-amber-600 transition">
+                <Link href="/about-us" className="text-gray-400 hover:text-amber-600 transition">
                   About Us
                 </Link>
               </li>
@@ -85,8 +81,8 @@ export default function Footer() {
                 </Link>
               </li>
               <li>
-                <Link href="#" className="text-gray-400 hover:text-amber-600 transition">
-                  Contact Support
+                <Link href="/contact" className="text-gray-400 hover:text-amber-600 transition">
+                  Contact Us
                 </Link>
               </li>
             </ul>
@@ -122,21 +118,21 @@ export default function Footer() {
             <Phone size={18} style={{ color: '#C4A57B' }} className="mt-1" />
             <div>
               <p className="font-semibold text-sm">Phone</p>
-              <p className="text-sm text-gray-400">+1 (555) 123-4567</p>
+              <p className="text-sm text-gray-400">+91 97235 53038</p>
             </div>
           </div>
           <div className="flex items-start gap-3">
             <Mail size={18} style={{ color: '#C4A57B' }} className="mt-1" />
             <div>
               <p className="font-semibold text-sm">Email</p>
-              <p className="text-sm text-gray-400">support@3dprints.com</p>
+              <p className="text-sm text-gray-400">talaviyahardik4@gmail.com</p>
             </div>
           </div>
           <div className="flex items-start gap-3">
             <MapPin size={18} style={{ color: '#C4A57B' }} className="mt-1" />
             <div>
               <p className="font-semibold text-sm">Address</p>
-              <p className="text-sm text-gray-400">123 Digital Lane, Tech City, TC 12345</p>
+              <p className="text-sm text-gray-400">Gujrat, India</p>
             </div>
           </div>
         </div>

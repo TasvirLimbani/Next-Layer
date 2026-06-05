@@ -346,7 +346,7 @@ export default function ProductDetailPage() {
           {/* Price */}
           <div className="mb-6">
             <div className="flex items-center gap-4 mb-2">
-              <span className="text-3xl font-bold text-gray-900">${product.price.toFixed(2)}</span>
+              <span className="text-3xl font-bold text-gray-900">₹{product.price.toFixed(2)}</span>
               {product.originalPrice && (
                 <span className="text-lg text-gray-500 line-through">
                   ₹{product.originalPrice.toFixed(2)}
@@ -361,10 +361,10 @@ export default function ProductDetailPage() {
           </div>
 
           {/* Viewers Count */}
-          <div className="flex items-center gap-2 text-sm text-gray-600 mb-6 p-3 bg-gray-50 rounded">
+          {/* <div className="flex items-center gap-2 text-sm text-gray-600 mb-6 p-3 bg-gray-50 rounded">
             <Eye size={16} style={{ color: '#C4A57B' }} />
             {viewers} people are viewing this right now
-          </div>
+          </div> */}
 
           {/* Stock Status */}
           <div className="mb-6">

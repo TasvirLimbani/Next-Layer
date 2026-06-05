@@ -130,6 +130,65 @@ export default function CheckoutPage() {
     }, 2000);
   };
 
+  const handleWhatsAppCheckout = () => {
+    const orderId = `ORD-${Date.now()}`;
+
+    let message = `🛍️ *New Order*\n\n`;
+
+    message += `📦 Order ID: ${orderId}\n\n`;
+
+    message += `👤 Customer Details\n`;
+    message += `Name: ${formData.firstName}\n`;
+    message += `Email: ${formData.email}\n`;
+    message += `Address: ${formData.address}\n`;
+    message += `City: ${formData.city}\n`;
+    message += `State: ${formData.state}\n`;
+    message += `Zip Code: ${formData.zipCode}\n\n`;
+
+    message += `🛒 Order Items\n`;
+
+    // visibleCart.forEach((item, index) => {
+    //   message += `${index + 1}. ${item.product.name}\n`;
+    //   message += `   Qty: ${item.quantity}\n`;
+    //   message += `   Price: ₹${item.product.price}\n`;
+
+    //   if (
+    //     typeof item.customization === "string" &&
+    //     item.customization.trim()
+    //   ) {
+    //     message += `   Custom: ${item.customization}\n`;
+    //   }
+
+    //   message += `\n`;
+    // });
+    visibleCart.forEach((item, index) => {
+      message += `${index + 1}. ${item.product.name}\n`;
+
+      message += `SKU: ${item.product.sku || 'N/A'}\n`;
+      message += `Qty: ${item.quantity}\n`;
+      message += `Price: ₹${item.product.price}\n`;
+
+      if (
+        typeof item.customization === "string" &&
+        item.customization.trim()
+      ) {
+        message += `Custom: ${item.customization}\n`;
+      }
+
+      message += `\n`;
+    });
+
+    message += `💰 Total: ₹${total.toFixed(2)}\n`;
+
+    const phoneNumber = "919723553038"; // Your WhatsApp Number
+
+    const whatsappUrl = `https://wa.me/${phoneNumber}?text=${encodeURIComponent(
+      message
+    )}`;
+
+    window.open(whatsappUrl, "_blank");
+  };
+
   if (!loadingCart && visibleCart.length === 0 && !orderPlaced) {
     return (
       <div className="max-w-7xl mx-auto px-4 py-16 md:py-24">
@@ -293,8 +352,16 @@ export default function CheckoutPage() {
                 />
               </div>
 
-              <button
+              {/* <button
                 onClick={() => setStep('payment')}
+                className="w-full py-3 text-white font-semibold rounded hover:opacity-90 transition mt-6"
+                style={{ backgroundColor: '#C4A57B' }}
+              >
+                CONTINUE TO PAYMENT
+              </button> */}
+
+              <button
+                onClick={handleWhatsAppCheckout}
                 className="w-full py-3 text-white font-semibold rounded hover:opacity-90 transition mt-6"
                 style={{ backgroundColor: '#C4A57B' }}
               >

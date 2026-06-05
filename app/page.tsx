@@ -22,7 +22,7 @@ export default function Home() {
       <NewArrivals />
 
       {/* Featured Section */}
-      <FeaturedSection />
+      {/* <FeaturedSection /> */}
 
       {/* Assurance Section */}
       <AssuranceSection />

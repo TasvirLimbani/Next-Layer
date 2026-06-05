@@ -7,43 +7,43 @@ export default function Portfolio() {
     // =========================
     // REVIEWS DATA
     // =========================
-    const reviews = [
-        {
-            name: 'Rahul Patel',
-            role: 'CEO, Fashion Brand',
-            review:
-                'Amazing website design and smooth development process. Highly recommended!',
-            rating: '★★★★★',
-        },
-        {
-            name: 'Priya Shah',
-            role: 'Dental Clinic Owner',
-            review:
-                'Our clinic website looks premium and loads super fast. Great experience.',
-            rating: '★★★★★',
-        },
-        {
-            name: 'Amit Verma',
-            role: 'Gym Owner',
-            review:
-                'Professional team with modern UI design. Clients love our new website.',
-            rating: '★★★★★',
-        },
-        {
-            name: 'Karan Mehta',
-            role: 'Real Estate Agency',
-            review:
-                'Very clean design and mobile responsive website. Perfect work done.',
-            rating: '★★★★★',
-        },
-        {
-            name: 'Sneha Joshi',
-            role: 'Beauty Store',
-            review:
-                'They created a beautiful ecommerce website for our brand.',
-            rating: '★★★★★',
-        },
-    ]
+const reviews = [
+    {
+        name: 'Rahul Patel',
+        role: 'Engineering Student',
+        review:
+            'The 3D printed parts were highly accurate and matched the dimensions perfectly. Great quality and fast delivery.',
+        rating: '★★★★★',
+    },
+    {
+        name: 'Priya Shah',
+        role: 'Product Designer',
+        review:
+            'Excellent print quality with smooth finishing. The custom prototype helped us speed up our product development.',
+        rating: '★★★★★',
+    },
+    {
+        name: 'Amit Verma',
+        role: 'Robotics Enthusiast',
+        review:
+            'Ordered custom gears and brackets for my robotics project. The parts were durable and fit perfectly.',
+        rating: '★★★★★',
+    },
+    {
+        name: 'Karan Mehta',
+        role: 'Architecture Consultant',
+        review:
+            'The 3D printed architectural model exceeded expectations. Fine details were captured beautifully.',
+        rating: '★★★★★',
+    },
+    {
+        name: 'Sneha Joshi',
+        role: 'Small Business Owner',
+        review:
+            'Great experience ordering custom 3D printed products. Quality, packaging, and support were all excellent.',
+        rating: '★★★★★',
+    },
+]
 
     // =========================
     // INSTAGRAM REELS

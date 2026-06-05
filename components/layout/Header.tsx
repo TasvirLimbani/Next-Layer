@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import { useEffect, useState } from 'react';
-import { ShoppingCart, Heart, User, Search, Menu, X, ArrowRight, Sparkles } from 'lucide-react';
+import { ShoppingCart, Heart, User, Search, Menu, X, ArrowRight, Sparkles, ChevronDown } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { useAppContext } from '@/lib/context';
 import { fetchProductSearch } from '@/lib/products';
@@ -14,6 +14,7 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 export default function Header() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isSearchOpen, setIsSearchOpen] = useState(false);
+  const [isFilamentsOpen, setIsFilamentsOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [searchResults, setSearchResults] = useState<Product[]>([]);
   const [searchLoading, setSearchLoading] = useState(false);
@@ -125,6 +126,10 @@ export default function Header() {
     router.push(`/shop/${productId}`);
   };
 
+  const handleFilamentClick = () => {
+    setIsFilamentsOpen(false);
+  };
+
   const highlightMatch = (text: string, query: string) => {
     const trimmedQuery = query.trim();
 
@@ -153,11 +158,50 @@ export default function Header() {
     );
   };
 
+  const filamentColumns = [
+    {
+      title: 'Functional PLA',
+      items: [
+        { name: 'PLA', slug: 'pla', description: 'Affordable everyday prototyping' },
+        { name: 'PLA+', slug: 'pla-plus', description: '37 colors · everyday printing', badge: { label: 'NEW COLORS', color: 'violet' as const } },
+        { name: 'PLA Matte', slug: 'pla-matte', description: 'Smooth non-reflective finish' },
+        { name: 'PLA CF', slug: 'pla-cf', description: 'Carbon fiber reinforced' },
+      ],
+    },
+    {
+      title: 'Aesthetic PLA',
+      items: [
+        { name: 'PLA Metallic', slug: 'pla-metallic', description: 'Real metal finish', badge: { label: 'NEW', color: 'green' as const } },
+        { name: 'PLA Silk', slug: 'pla-silk', description: 'Luxurious sheen' },
+        { name: 'Dual/Tri-Color Silk', slug: 'dual-tri-color-silk', description: 'Multi-tone color shift silk' },
+        { name: 'PLA Marble', slug: 'pla-marble', description: 'Stone texture effect' },
+        { name: 'PLA Starlight', slug: 'pla-starlight', description: 'Sparkle glitter effect' },
+        { name: 'PLA Glow in the Dark', slug: 'pla-glow-in-the-dark', description: 'Photoluminescent' },
+        { name: 'PLA Wood', slug: 'pla-wood', description: 'Real wood fiber texture' },
+      ],
+    },
+    {
+      title: 'PETG',
+      items: [
+        { name: 'PETG-HS', slug: 'petg-hs', description: 'High speed · functional parts' },
+        { name: 'PETG Translucent', slug: 'petg-translucent', description: 'Light-transmitting clarity' },
+        { name: 'PETG CF', slug: 'petg-cf', description: 'Rigid & heat-resistant · structural parts', badge: { label: 'NEW', color: 'green' as const } },
+      ],
+    },
+    {
+      title: 'ABS / ASA',
+      items: [
+        { name: 'ABS', slug: 'abs', description: 'Heat resistant · enclosure needed' },
+        { name: 'ASA', slug: 'asa', description: 'UV stable · outdoor use' },
+      ],
+    },
+  ];
+
   return (
     <header className="sticky top-0 z-50 bg-white border-b border-gray-200">
       {/* Top banner */}
       <div className="bg-gray-100 text-center py-2 text-sm text-gray-700">
-        Free shipping worldwide for all orders over ₹199
+        Free shipping worldwide for all orders over ₹499
       </div>
 
       {/* Main header */}
@@ -169,42 +213,66 @@ export default function Header() {
           </Link>
 
           {/* Desktop Navigation */}
-          <nav className="hidden lg:flex items-center gap-6 xl:gap-8">
+          <nav className="hidden lg:flex items-center gap-6 xl:gap-8 relative">
             <Link href="/" className="text-xs xl:text-sm font-medium hover:text-amber-700 transition whitespace-nowrap">
               HOME
             </Link>
-            <div className="group relative">
-              <button className="text-xs xl:text-sm font-medium hover:text-amber-700 transition flex items-center gap-1 whitespace-nowrap">
-                SHOP
-                <span className="text-xs">▼</span>
-              </button>
-              <div className="absolute left-0 mt-0 w-48 bg-white border border-gray-200 rounded-md shadow-lg opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all z-50">
-                <Link href="/shop" className="block px-4 py-2 hover:bg-gray-50 text-sm">
-                  All Products
-                </Link>
-                <Link href="/shop?category=Miniatures" className="block px-4 py-2 hover:bg-gray-50 text-sm">
-                  Miniatures
-                </Link>
-                <Link href="/shop?category=Home%20Decor" className="block px-4 py-2 hover:bg-gray-50 text-sm">
-                  Home Decor
-                </Link>
-                <Link href="/shop?category=Jewelry" className="block px-4 py-2 hover:bg-gray-50 text-sm">
-                  Jewelry
-                </Link>
-                <Link href="/shop?category=Functional%20Items" className="block px-4 py-2 hover:bg-gray-50 text-sm">
-                  Functional Items
-                </Link>
+            <Link href="/shop" className="text-xs xl:text-sm font-medium hover:text-amber-700 transition whitespace-nowrap">
+              SHOP
+            </Link>
+            <div
+              className="relative"
+              onMouseEnter={() => setIsFilamentsOpen(true)}
+              onMouseLeave={() => setIsFilamentsOpen(false)}
+            >
+              <Link
+                href="/shop"
+                className="text-xs xl:text-sm font-medium hover:text-amber-700 transition whitespace-nowrap inline-flex items-center gap-1 py-1"
+              >
+                <span>FILAMENTS</span>
+                <ChevronDown size={14} className="text-gray-500 transition" aria-hidden="true" />
+              </Link>
+
+              <div
+                className={`absolute left-1/2 top-full z-40 w-[min(95vw,1100px)] -translate-x-1/2 pt-3 transition-all duration-200 ${isFilamentsOpen
+                    ? 'pointer-events-auto visible opacity-100'
+                    : 'pointer-events-none invisible opacity-0'
+                  }`}
+              >
+                <div className="rounded-2xl border border-gray-200 bg-[#f6f6f6] p-6 shadow-[0_18px_55px_rgba(0,0,0,0.18)]">
+                  <div className="grid grid-cols-4 gap-7">
+                    {filamentColumns.map((column) => (
+                      <div key={column.title}>
+                        <h3 className="text-[1.06rem] font-semibold text-gray-900">{column.title}</h3>
+                        <div className="mt-3 border-t border-gray-300 pt-4 space-y-6">
+                          {column.items.map((item) => (
+                            <Link
+                              key={item.name}
+                              href={`/filament/${item.slug}`}
+                              className="block group/item"
+                              onClick={handleFilamentClick}
+                            >
+                              <p className="flex items-center gap-2 text-[1.06rem] font-semibold text-gray-900 leading-tight group-hover/item:text-amber-700 transition-colors">
+                                <span>{item.name}</span>
+                                {item.badge && (
+                                  <span
+                                    className={`rounded-md px-2 py-0.5 text-[0.72rem] font-semibold tracking-wide text-white ${item.badge.color === 'green' ? 'bg-emerald-600' : 'bg-violet-600'
+                                      }`}
+                                  >
+                                    {item.badge.label}
+                                  </span>
+                                )}
+                              </p>
+                              <p className="mt-1 text-[0.72rem] text-gray-500">{item.description}</p>
+                            </Link>
+                          ))}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
               </div>
             </div>
-            <Link href="#" className="text-xs xl:text-sm font-medium hover:text-amber-700 transition whitespace-nowrap">
-              COLLECTIONS
-            </Link>
-            <Link href="#" className="text-xs xl:text-sm font-medium hover:text-amber-700 transition whitespace-nowrap">
-              CONTACT
-            </Link>
-            <Link href="#" className="text-xs xl:text-sm font-medium hover:text-amber-700 transition whitespace-nowrap">
-              BLOG
-            </Link>
           </nav>
 
           {/* Right Icons */}
