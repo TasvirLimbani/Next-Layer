@@ -158,10 +158,15 @@ export default function ProductCard({
         {/* Image Container */}
         <div className="relative bg-gray-100 rounded-lg overflow-hidden mb-4 aspect-square">
           <Image
-            src={product.image}
+            src={`/api/image-proxy?url=${encodeURIComponent(product.image)}`}
             alt={product.name}
             fill
-            className={disableHoverEffects ? 'object-contain bg-white' : 'object-cover group-hover:scale-105 transition-transform duration-300'}
+            unoptimized
+            className={
+              disableHoverEffects
+                ? 'object-contain bg-white'
+                : 'object-cover group-hover:scale-105 transition-transform duration-300'
+            }
           />
 
           {/* Badge */}
