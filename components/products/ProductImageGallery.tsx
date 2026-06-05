@@ -33,7 +33,7 @@ export default function ProductImageGallery({ images, productName }: ProductImag
       {/* Main Image */}
       <div className="relative bg-gray-100 rounded-lg overflow-hidden mb-4 aspect-square group">
         <Image
-          src={currentImage}
+          src={`/api/image-proxy?url=${encodeURIComponent(currentImage)}`}
           alt={`${productName} - view ${currentIndex + 1}`}
           fill
           className="object-cover transition-transform duration-300 group-hover:scale-105"
@@ -78,7 +78,7 @@ export default function ProductImageGallery({ images, productName }: ProductImag
               }`}
             >
               <Image
-                src={image}
+                src={`/api/image-proxy?url=${encodeURIComponent(image)}`}
                 alt={`Thumbnail ${idx + 1}`}
                 fill
                 className="object-cover"

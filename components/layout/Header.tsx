@@ -412,7 +412,7 @@ export default function Header() {
                         >
                           <div className="h-16 w-16 shrink-0 overflow-hidden rounded-xl bg-gray-100 ring-1 ring-gray-200">
                             <img
-                              src={product.image}
+                              src={`/api/image-proxy?url=${encodeURIComponent(product.image)}`}
                               alt={product.name}
                               className="h-full w-full object-cover transition duration-300 group-hover:scale-105"
                             />

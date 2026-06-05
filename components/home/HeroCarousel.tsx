@@ -68,7 +68,7 @@ export default function HeroCarousel() {
             }`}
         >
           <Image
-            src={slide.image}
+            src={`/api/image-proxy?url=${encodeURIComponent(slide.image)}`}
             alt={slide.title}
             fill
             className="object-cover"

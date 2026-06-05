@@ -159,7 +159,7 @@ export default function CartPage() {
               >
                 <div className="relative w-24 h-24 bg-gray-100 rounded-lg flex-shrink-0">
                   <Image
-                    src={item.product.image}
+                    src={`/api/image-proxy?url=${encodeURIComponent(item.product.image)}`}
                     alt={item.product.name}
                     fill
                     className="object-cover rounded-lg"
