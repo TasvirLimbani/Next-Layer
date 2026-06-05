@@ -209,7 +209,7 @@ export default function FilamentDetailPage() {
                 <Link href="/shop" className="inline-flex items-center px-6 py-2 text-white rounded font-semibold" style={{ backgroundColor: '#C4A57B' }}>
                     Back to Shop
                 </Link>
-            </div>
+            </div> 
         );
     }
 
