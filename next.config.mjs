@@ -5,7 +5,21 @@ const nextConfig = {
   },
   images: {
     unoptimized: true,
+    remotePatterns: [
+      {
+        protocol: "http",
+        hostname: "nextlayer.soon.it",
+      },
+      {
+        protocol: "https",
+        hostname: "nextlayer.soon.it",
+      },
+      {
+        protocol: "https",
+        hostname: "placehold.co",
+      },
+    ],
   },
-}
+};
 
-export default nextConfig
+export default nextConfig;
