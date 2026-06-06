@@ -12,6 +12,7 @@ type FilamentApiResponse = {
     status: boolean;
     data?: {
         id: number;
+        sku: string;
         title: string;
         slug: string;
         description: string;
@@ -26,6 +27,7 @@ type FilamentApiResponse = {
 
 type FilamentViewModel = {
     id: number;
+    sku: string;
     title: string;
     slug: string;
     description: string;
@@ -146,6 +148,7 @@ export default function FilamentDetailPage() {
 
                 const normalized: FilamentViewModel = {
                     id: payload.data.id,
+                    sku: payload.data.sku,
                     title: formatFilamentTitle(payload.data.title),
                     slug: payload.data.slug,
                     description: payload.data.description,
@@ -209,7 +212,7 @@ export default function FilamentDetailPage() {
                 <Link href="/shop" className="inline-flex items-center px-6 py-2 text-white rounded font-semibold" style={{ backgroundColor: '#C4A57B' }}>
                     Back to Shop
                 </Link>
-            </div> 
+            </div>
         );
     }
 
@@ -240,26 +243,14 @@ export default function FilamentDetailPage() {
                 throw new Error('Please sign in before adding items to cart.');
             }
 
-            const requestBody: {
-                user_id: number;
-                product_id: number;
-                quantity: number;
-                customization?: string;
-            } = {
+            const requestBody = {
                 user_id: Number(user.id),
-                product_id: Number(filament.id),
+                sku: filament.sku,
                 quantity,
-            };
-
-            const customization = {
+                colour: selectedColor || '',
                 diameter: selectedDiameter || filament.diameter,
                 weight: selectedWeight || filament.weight,
-                colour: selectedColor || '',
             };
-
-            if (customization) {
-                requestBody.customization = JSON.stringify(customization);
-            }
 
             const response = await fetch('/api/cart', {
                 method: 'POST',

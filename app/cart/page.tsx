@@ -174,10 +174,32 @@ export default function CartPage() {
                   </Link>
                   <p className="text-sm text-gray-600 mb-2">{item.product.vendor}</p>
 
-                  {item.customization && (
-                    <p className="text-xs bg-gray-100 px-2 py-1 rounded inline-block mb-2">
-                      Customized: {item.customization}
-                    </p>
+                  {item.extra && (
+                    <div className="flex flex-wrap gap-2 mb-2">
+                      {item.extra.customization && (
+                        <span className="text-xs bg-gray-100 px-2 py-1 rounded">
+                          Custom: {item.extra.customization}
+                        </span>
+                      )}
+
+                      {item.extra.colour && (
+                        <span className="text-xs bg-gray-100 px-2 py-1 rounded">
+                          Colour: {item.extra.colour}
+                        </span>
+                      )}
+
+                      {item.extra.diameter && (
+                        <span className="text-xs bg-gray-100 px-2 py-1 rounded">
+                          Diameter: {item.extra.diameter}
+                        </span>
+                      )}
+
+                      {item.extra.weight && (
+                        <span className="text-xs bg-gray-100 px-2 py-1 rounded">
+                          Weight: {item.extra.weight}
+                        </span>
+                      )}
+                    </div>
                   )}
 
                   <p className="font-semibold text-gray-900">₹{item.product.price.toFixed(2)}</p>

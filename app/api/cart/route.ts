@@ -67,16 +67,48 @@ export async function POST(req: NextRequest) {
   try {
     const body = await req.json();
 
-    const { user_id, product_id, customization, quantity } = body;
+    const {
+      user_id,
+      sku,
+      quantity,
+      customization,
+      colour,
+      diameter,
+      weight,
+    } = body;
 
-    if (!user_id || !product_id || !quantity) {
+    if (!user_id || !sku || !quantity) {
       return NextResponse.json(
         {
           success: false,
-          message: 'user_id, product_id and quantity are required',
+          message: 'user_id, sku and quantity are required',
         },
         { status: 400 }
       );
+    }
+
+    const payload: Record<string, any> = {
+      user_id,
+      sku,
+      quantity,
+    };
+
+    // Product
+    if (customization) {
+      payload.customization = customization;
+    }
+
+    // Filament
+    if (colour) {
+      payload.colour = colour;
+    }
+
+    if (diameter) {
+      payload.diameter = diameter;
+    }
+
+    if (weight) {
+      payload.weight = weight;
     }
 
     const res = await fetch(
@@ -86,12 +118,7 @@ export async function POST(req: NextRequest) {
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({
-          user_id,
-          product_id,
-          customization,
-          quantity,
-        }),
+        body: JSON.stringify(payload),
       }
     );
 
@@ -119,7 +146,7 @@ export async function POST(req: NextRequest) {
       {
         success: false,
         message: 'Internal Server Error',
-        error: error instanceof Error ? error.message : error,
+        error: error instanceof Error ? error.message : String(error),
       },
       { status: 500 }
     );

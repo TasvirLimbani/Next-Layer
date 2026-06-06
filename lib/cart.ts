@@ -11,9 +11,16 @@ export interface CartApiItem {
   category?: string;
   stock?: string | number;
   quantity?: number;
-  customization?: string | null;
   total_amount?: string | number;
   images?: string[];
+
+  extra?: {
+    colour?: string | null;
+    diameter?: string | null;
+    weight?: string | null;
+    customization?: string | null;
+  };
+
   product?: ApiProduct;
   id?: string | number;
   subcategory?: string | null;
@@ -30,11 +37,18 @@ export interface CartApiResponse {
   message?: string;
 }
 
+export interface CartExtra {
+  colour?: string | null;
+  diameter?: string | null;
+  weight?: string | null;
+  customization?: string | null;
+}
+
 export interface RemoteCartItem {
   cartId: string;
   product: Product;
   quantity: number;
-  customization?: string;
+  extra?: CartExtra;
   totalAmount: number;
 }
 
@@ -73,7 +87,7 @@ function mapCartApiItemToCartItem(item: CartApiItem): RemoteCartItem {
       images: imageList.length ? imageList : mappedProduct.images,
     },
     quantity: Number(item.quantity) || 1,
-    customization: item.customization || undefined,
+    extra: item.extra,
     totalAmount: Number(item.total_amount) || mappedProduct.price * (Number(item.quantity) || 1),
   };
 }

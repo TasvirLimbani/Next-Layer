@@ -177,18 +177,15 @@ export default function ProductDetailPage() {
 
       const requestBody: {
         user_id: number;
-        product_id: number;
+        sku: string;
+        customization: string;
         quantity: number;
-        customization?: string;
       } = {
         user_id: Number(user.id),
-        product_id: Number(product.id),
+        sku: product.sku,
+        customization: customName.trim(),
         quantity,
       };
-
-      if (customName.trim()) {
-        requestBody.customization = customName.trim();
-      }
 
       const response = await fetch('/api/cart', {
         method: 'POST',
