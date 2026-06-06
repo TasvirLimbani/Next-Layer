@@ -94,7 +94,7 @@ export default function PurchaseNotifications() {
         <div className="flex gap-3 pr-6">
           <div className="relative w-16 h-16 flex-shrink-0 rounded-lg overflow-hidden bg-gray-100">
             <Image
-              src={`/api/image-proxy?url=${encodeURIComponent(notification.productImage)}`}
+              src={notification.productImage}
               alt={notification.productName}
               fill
               className="object-cover"
