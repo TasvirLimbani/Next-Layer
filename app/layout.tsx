@@ -45,11 +45,11 @@ export default function RootLayout({
         <AppProvider>
           <PurchaseNotification />
           <ScrollToTop />
-          <Header />
+          {/* <Header /> */}
           <main className="min-h-screen">
             {children}
           </main>
-          <Footer />
+          {/* <Footer /> */}
         </AppProvider>
         {process.env.NODE_ENV === 'production' && <Analytics />}
       </body>
