@@ -7,62 +7,62 @@ export default function Portfolio() {
     // =========================
     // REVIEWS DATA
     // =========================
-const reviews = [
-    {
-        name: 'Rahul Patel',
-        role: 'Engineering Student',
-        review:
-            'The 3D printed parts were highly accurate and matched the dimensions perfectly. Great quality and fast delivery.',
-        rating: '★★★★★',
-    },
-    {
-        name: 'Priya Shah',
-        role: 'Product Designer',
-        review:
-            'Excellent print quality with smooth finishing. The custom prototype helped us speed up our product development.',
-        rating: '★★★★★',
-    },
-    {
-        name: 'Amit Verma',
-        role: 'Robotics Enthusiast',
-        review:
-            'Ordered custom gears and brackets for my robotics project. The parts were durable and fit perfectly.',
-        rating: '★★★★★',
-    },
-    {
-        name: 'Karan Mehta',
-        role: 'Architecture Consultant',
-        review:
-            'The 3D printed architectural model exceeded expectations. Fine details were captured beautifully.',
-        rating: '★★★★★',
-    },
-    {
-        name: 'Sneha Joshi',
-        role: 'Small Business Owner',
-        review:
-            'Great experience ordering custom 3D printed products. Quality, packaging, and support were all excellent.',
-        rating: '★★★★★',
-    },
-]
+    const reviews = [
+        {
+            name: 'Rahul Patel',
+            role: 'Engineering Student',
+            review:
+                'The 3D printed parts were highly accurate and matched the dimensions perfectly. Great quality and fast delivery.',
+            rating: '★★★★★',
+        },
+        {
+            name: 'Priya Shah',
+            role: 'Product Designer',
+            review:
+                'Excellent print quality with smooth finishing. The custom prototype helped us speed up our product development.',
+            rating: '★★★★★',
+        },
+        {
+            name: 'Amit Verma',
+            role: 'Robotics Enthusiast',
+            review:
+                'Ordered custom gears and brackets for my robotics project. The parts were durable and fit perfectly.',
+            rating: '★★★★★',
+        },
+        {
+            name: 'Karan Mehta',
+            role: 'Architecture Consultant',
+            review:
+                'The 3D printed architectural model exceeded expectations. Fine details were captured beautifully.',
+            rating: '★★★★★',
+        },
+        {
+            name: 'Sneha Joshi',
+            role: 'Small Business Owner',
+            review:
+                'Great experience ordering custom 3D printed products. Quality, packaging, and support were all excellent.',
+            rating: '★★★★★',
+        },
+    ]
 
     // =========================
     // INSTAGRAM REELS
     // =========================
     const reels = [
         {
-            link: 'https://www.instagram.com/reel/DWq6zhzAsNr/',
+            link: 'https://www.instagram.com/reel/DaIAxXPuw-R/',
         },
         {
-            link: 'https://www.instagram.com/reel/DW8CSnigkxQ/',
+            link: 'https://www.instagram.com/reel/DaH_l8QucrY/',
         },
         {
-            link: 'https://www.instagram.com/reel/DWk7VFcAtRw/',
+            link: 'https://www.instagram.com/reel/DZ17iG5zBCc/',
         },
         {
-            link: 'https://www.instagram.com/reel/DWgcgMtAkEI/',
+            link: 'https://www.instagram.com/reel/DZ17iG5zBCc/',
         },
         {
-            link: 'https://www.instagram.com/reel/DWdHxqmAl62/',
+            link: 'https://www.instagram.com/reel/DaH_l8QucrY/',
         }
     ]
 

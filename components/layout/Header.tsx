@@ -201,7 +201,7 @@ export default function Header() {
     <header className="sticky top-0 z-50 bg-white border-b border-gray-200">
       {/* Top banner */}
       <div className="bg-gray-100 text-center py-2 text-sm text-gray-700">
-        Free shipping worldwide for all orders over ₹499
+        Free shipping  for all orders over ₹99
       </div>
 
       {/* Main header */}
@@ -235,8 +235,8 @@ export default function Header() {
 
               <div
                 className={`absolute left-1/2 top-full z-40 w-[min(95vw,1100px)] -translate-x-1/2 pt-3 transition-all duration-200 ${isFilamentsOpen
-                    ? 'pointer-events-auto visible opacity-100'
-                    : 'pointer-events-none invisible opacity-0'
+                  ? 'pointer-events-auto visible opacity-100'
+                  : 'pointer-events-none invisible opacity-0'
                   }`}
               >
                 <div className="rounded-2xl border border-gray-200 bg-[#f6f6f6] p-6 shadow-[0_18px_55px_rgba(0,0,0,0.18)]">

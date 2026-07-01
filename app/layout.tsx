@@ -43,13 +43,13 @@ export default function RootLayout({
     <html lang="en">
       <body className="font-sans antialiased bg-white">
         <AppProvider>
-          {/* <PurchaseNotification /> */}
+          <PurchaseNotification />
           <ScrollToTop />
-          {/* <Header /> */}
+          <Header />
           <main className="min-h-screen">
             {children}
           </main>
-          {/* <Footer /> */}
+          <Footer />
         </AppProvider>
         {process.env.NODE_ENV === 'production' && <Analytics />}
       </body>

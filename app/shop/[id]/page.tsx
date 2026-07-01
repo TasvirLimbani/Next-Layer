@@ -377,7 +377,12 @@ export default function ProductDetailPage() {
           </div>
 
           {/* Description */}
-          <p className="text-gray-700 text-base leading-relaxed mb-8">{product.description}</p>
+          <p
+            className="text-gray-700 text-base leading-relaxed mb-8"
+            dangerouslySetInnerHTML={{
+              __html: product.description.replace(/\\r\\n|\r\n|\n/g, "<br />"),
+            }}
+          />
 
           {/* Customization Form */}
           {product.customizable && (
