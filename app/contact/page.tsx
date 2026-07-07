@@ -14,11 +14,11 @@ export default function ContactPage() {
             <h1 className="text-3xl font-bold text-gray-900 mb-4">Contact Us</h1>
             <p className="text-gray-600 mb-8">
                 Have questions or need assistance? Email us at{' '}
-                <a href="mailto:talaviyahardik4@gmail.com" className="text-amber-600 font-medium">
-                    talaviyahardik4@gmail.com
+                <a href="mailto:nextlayercreations.info@gmail.com" className="text-amber-600 font-medium">
+                    nextlayercreations.info@gmail.com
                 </a>
-                .
-            </p>
+                    .
+                </p>
 
             <div className="bg-white shadow-sm rounded-lg overflow-hidden">
                 <div className="grid grid-cols-1 md:grid-cols-2">
@@ -26,15 +26,15 @@ export default function ContactPage() {
                         <h2 className="text-xl font-semibold mb-4">Contact Info</h2>
                         <p className="text-gray-700 mb-2">
                             <strong>Email:</strong>{' '}
-                            <a href="mailto:talaviyahardik4@gmail.com" className="text-amber-600">
-                                talaviyahardik4@gmail.com
+                            <a href="mailto:nextlayercreations.info@gmail.com" className="text-amber-600">
+                               nextlayercreations.info@gmail.com
                             </a>
                         </p>
                         <p className="text-gray-700 mb-2">
                             <strong>Phone:</strong>+91 97235 53038
                         </p>
                         <p className="text-gray-700">
-                            <strong>Address:</strong> 123 Design Street, Creative City
+                            <strong>Address:</strong> C-1215, Pragati ITPark, Mota Varachha
                         </p>
                     </div>
 

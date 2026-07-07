@@ -146,11 +146,19 @@ export default function Portfolio() {
                             key={index}
                             className="relative w-[300px] sm:w-[340px] h-[480px] rounded-[35px] overflow-hidden bg-black shrink-0 shadow-2xl"
                         >
-                            <iframe
+                            {/* <iframe
                                 src={`${reel.link}embed/captioned`}
                                 className="absolute top-0 left-0 w-full h-[720px] border-0 scale-[1.02]"
                                 scrolling="no"
                                 allowTransparency={true}
+                                allow="autoplay; clipboard-write; encrypted-media; picture-in-picture; web-share"
+                            /> */}
+
+                            <iframe
+                                src={`${reel.link}embed/captioned`}
+                                className="absolute top-0 left-0 w-full h-[720px] border-0 scale-[1.02]"
+                                scrolling="no"
+                                allowtransparency="true"
                                 allow="autoplay; clipboard-write; encrypted-media; picture-in-picture; web-share"
                             />
 

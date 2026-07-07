@@ -75,66 +75,46 @@ export default function WishlistPage() {
         return JSON.parse(rawBody) as WishlistResponse;
     };
 
-    const loadWishlist = async (isActive = true) => {
-        try {
-            setLoading(true);
-            setError('');
+const loadWishlist = async () => {
+  try {
+    setLoading(true);
+    setError('');
 
-            const savedUser = localStorage.getItem('user');
-            const parsedUser = savedUser ? (JSON.parse(savedUser) as UserProfile) : null;
-            const userId = user?.id || parsedUser?.id;
+    const savedUser = localStorage.getItem('user');
+    const parsedUser = savedUser ? JSON.parse(savedUser) : null;
 
-            if (!savedUser && !user?.id) {
-                if (isActive) {
-                    setProducts([]);
-                    setError('No user found in localStorage.');
-                }
-                return;
-            }
+    const userId = user?.id || parsedUser?.id;
 
-            if (!userId) {
-                if (isActive) {
-                    setProducts([]);
-                    setError('No valid user id found in localStorage.');
-                }
-                return;
-            }
+    if (!userId) {
+      setProducts([]);
+      setError('Please login first.');
+      return;
+    }
 
-            const data = await fetchWishlistJson(`/api/wishlist?user_id=${encodeURIComponent(String(userId))}`);
+    const response = await fetch(`/api/wishlist?user_id=${userId}`, {
+      cache: 'no-store',
+    });
 
-            if (!data.status && !data.success) {
-                throw new Error(data.message || 'Failed to load wishlist');
-            }
+    const data = await response.json();
 
-            if (isActive) {
-                const sourceItems = extractWishlistItems(data);
+    if (!data?.status && !data?.success) {
+      throw new Error(data?.message || 'Failed to load wishlist');
+    }
 
-                const mappedProducts = sourceItems.length
-                    ? sourceItems.map((item) => mapApiProductToProduct(item))
-                    : [];
-                setProducts(mappedProducts);
-            }
-        } catch (loadError) {
-            if (isActive) {
-                setProducts([]);
-                setError(loadError instanceof Error ? loadError.message : 'Failed to load wishlist');
-            }
-        } finally {
-            if (isActive) {
-                setLoading(false);
-            }
-        }
-    };
+    const items: ApiProduct[] =
+      data.wishlist || data.products || data.data?.wishlist || [];
 
-    useEffect(() => {
-        let isActive = true;
-
-        loadWishlist(isActive);
-
-        return () => {
-            isActive = false;
-        };
-    }, [user?.id]);
+    setProducts(items.map(mapApiProductToProduct));
+  } catch (err) {
+    setProducts([]);
+    setError(err instanceof Error ? err.message : 'Failed to load wishlist');
+  } finally {
+    setLoading(false);
+  }
+};
+useEffect(() => {
+  loadWishlist();
+}, [user?.id]);
 
     if (loading) {
         return (

@@ -13,15 +13,26 @@ export interface Product {
   inStock: boolean;
   tags: string[];
   sku: string;
+  color: string;
+  variants?: ProductVariant[];
   customizable: boolean;
+  image_customizable: boolean;
 }
 
+export interface ProductVariant {
+  color: string;
+  images: string[];
+  image_urls: string[];
+}
 export interface CartItem {
   product: Product;
   quantity: number;
   customization?: {
     customName?: string;
   };
+  image_customizable?: {
+    customImage?: string;
+  }
 }
 
 export interface WishlistItem {

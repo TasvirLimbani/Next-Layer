@@ -7,13 +7,13 @@ export async function GET(req: NextRequest) {
   try {
     const { searchParams } = new URL(req.url);
 
-    const user_id = searchParams.get('user_id');
+    const user_id = searchParams.get("user_id");
 
     if (!user_id) {
       return NextResponse.json(
         {
           success: false,
-          message: 'user_id is required',
+          message: "user_id is required",
         },
         { status: 400 }
       );
@@ -22,44 +22,48 @@ export async function GET(req: NextRequest) {
     const res = await fetch(
       `http://nextlayer.soon.it/api/Wishlist/get.php?user_id=${user_id}`,
       {
-        method: 'GET',
-        cache: 'no-store',
+        cache: "no-store",
       }
     );
 
-    const data = await res.json();
-    const wishlist =
-      (Array.isArray(data?.wishlist) && data.wishlist) ||
-      (Array.isArray(data?.products) && data.products) ||
-      (Array.isArray(data?.data) && data.data) ||
-      (Array.isArray(data?.result) && data.result) ||
-      [];
+    const text = await res.text();
 
-    if (!data?.status) {
+    console.log("Wishlist API Response:", text);
+
+    let data;
+
+    try {
+      data = JSON.parse(text);
+    } catch {
       return NextResponse.json(
         {
           success: false,
-          message: 'Failed to fetch wishlist',
+          message: "Invalid JSON returned from PHP API",
+          response: text,
         },
-        { status: 400 }
+        { status: 500 }
       );
     }
 
-    return NextResponse.json(
-      {
-        status: true,
-        success: true,
-        wishlist,
-        products: wishlist,
-      },
-      { status: 200 }
-    );
+    const wishlist =
+      data.wishlist ||
+      data.products ||
+      data.data?.wishlist ||
+      data.result?.wishlist ||
+      [];
+
+    return NextResponse.json({
+      success: true,
+      status: true,
+      wishlist,
+      products: wishlist,
+    });
   } catch (error) {
     return NextResponse.json(
       {
         success: false,
-        message: 'Internal Server Error',
-        error: error instanceof Error ? error.message : error,
+        message: "Internal Server Error",
+        error: error instanceof Error ? error.message : String(error),
       },
       { status: 500 }
     );
@@ -71,74 +75,44 @@ export async function GET(req: NextRequest) {
 // ======================
 export async function POST(req: NextRequest) {
   try {
-    const contentType = req.headers.get('content-type') || '';
-    let user_id: string | number | null = null;
-    let product_id: string | number | null = null;
-    let upstreamBody: FormData | string | null = null;
+    const body = await req.json();
 
-    if (contentType.includes('multipart/form-data') || contentType.includes('application/x-www-form-urlencoded')) {
-      const formData = await req.formData();
-      user_id = formData.get('user_id')?.toString() || null;
-      product_id = formData.get('product_id')?.toString() || null;
+    const { user_id, product_id } = body;
 
-      const forwardFormData = new FormData();
-      forwardFormData.append('user_id', user_id || '');
-      forwardFormData.append('product_id', product_id || '');
-      upstreamBody = forwardFormData;
-    } else {
-      const body = await req.json();
-      user_id = body?.user_id ?? null;
-      product_id = body?.product_id ?? null;
-
-      upstreamBody = JSON.stringify({
-        user_id,
-        product_id,
-      });
-    }
+    console.log("Received:", body);
 
     if (!user_id || !product_id) {
       return NextResponse.json(
         {
           success: false,
-          message: 'user_id and product_id are required',
+          message: "user_id and product_id are required",
         },
         { status: 400 }
       );
     }
 
+    const formData = new FormData();
+    formData.append("user_id", String(user_id));
+    formData.append("product_id", String(product_id));
+
     const res = await fetch(
-      'http://nextlayer.soon.it/api/Wishlist/add.php',
+      "http://nextlayer.soon.it/api/Wishlist/add.php",
       {
-        method: 'POST',
-        body: upstreamBody,
+        method: "POST",
+        body: formData,
       }
     );
 
     const data = await res.json();
 
-    if (!data?.status) {
-      return NextResponse.json(
-        {
-          success: false,
-          message: data?.message || 'Failed to add wishlist',
-        },
-        { status: 400 }
-      );
-    }
+    console.log("PHP Response:", data);
 
-    return NextResponse.json(
-      {
-        success: true,
-        message: data.message,
-      },
-      { status: 200 }
-    );
+    return NextResponse.json(data);
   } catch (error) {
     return NextResponse.json(
       {
         success: false,
-        message: 'Internal Server Error',
-        error: error instanceof Error ? error.message : error,
+        message: "Internal Server Error",
       },
       { status: 500 }
     );

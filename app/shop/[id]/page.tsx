@@ -8,7 +8,7 @@ import ProductImageGallery from '@/components/products/ProductImageGallery';
 import { useAppContext } from '@/lib/context';
 import { useParams } from 'next/navigation';
 import { fetchProductById } from '@/lib/products';
-import { Product } from '@/lib/types';
+import { Product, UserProfile } from '@/lib/types';
 
 export default function ProductDetailPage() {
   const params = useParams();
@@ -21,10 +21,47 @@ export default function ProductDetailPage() {
   const [isTogglingWishlist, setIsTogglingWishlist] = useState(false);
   const [quantity, setQuantity] = useState(1);
   const [customName, setCustomName] = useState('');
+  const [customImage, setCustomImage] = useState<File | null>(null);
   const [viewers, setViewers] = useState(Math.floor(Math.random() * 50) + 5);
   const [showNotification, setShowNotification] = useState(false);
   const [isAddingToCart, setIsAddingToCart] = useState(false);
   const [wishlistError, setWishlistError] = useState('');
+  const [selectedColor, setSelectedColor] = useState<string>('');
+  const [selectedColorIndex, setSelectedColorIndex] = useState<number>(0);
+  const [selectedImages, setSelectedImages] = useState<string[]>([]);
+const [notificationMessage, setNotificationMessage] = useState('');
+const [notificationType, setNotificationType] = useState<'success' | 'error'>('success');
+
+
+
+
+  // Map color names to hex values
+  const getColorHex = (colorName: string): string => {
+    const colorMap: { [key: string]: string } = {
+      'red': '#EF4444',
+      'blue': '#3B82F6',
+      'green': '#10B981',
+      'yellow': '#FCD34D',
+      'purple': '#A855F7',
+      'pink': '#EC4899',
+      'orange': '#F97316',
+      'black': '#1F2937',
+      'white': '#F5F5F5',
+      'gray': '#9CA3AF',
+      'brown': '#92400E',
+      'gold': '#D97706',
+      'silver': '#D1D5DB',
+      'rose pink': '#F43F5E',
+      'sky blue': '#06B6D4',
+      'lavender': '#C084FC',
+      'coffee brown': '#78350F',
+      'jet black': '#000000',
+      'terracotta': '#EA580C',
+      'bronze': '#92400E',
+      'natural': '#C4A57B',
+    };
+    return colorMap[colorName.toLowerCase()] || '#9CA3AF';
+  };
 
   useEffect(() => {
     let isActive = true;
@@ -35,12 +72,21 @@ export default function ProductDetailPage() {
         setError('');
         const matchedProduct = await fetchProductById(id);
 
+        console.log("matchedProduct", matchedProduct);
+
         if (!isActive) {
           return;
         }
 
+        console.log('Matched Product:::::::::::::::::::::     ', fetchProductById(id));
         setProduct(matchedProduct);
-        setIsWishlisted(isInWishlist(matchedProduct.id));
+        (isInWishlist(matchedProduct.id));
+        // Set default selected color to first color
+        if (matchedProduct.variants?.length) {
+          setSelectedColor(matchedProduct.variants[0].color);
+          setSelectedColorIndex(0);
+          setSelectedImages(matchedProduct.variants[0].images);
+        }
       } catch (loadError) {
         if (!isActive) {
           return;
@@ -82,6 +128,8 @@ export default function ProductDetailPage() {
           ? products.some((p: any) => String(p.id ?? p.product_id ?? p.productId) === String(product.id))
           : false;
 
+
+
         setIsWishlisted(Boolean(has));
       } catch (err) {
         // silently ignore server check errors; UI will fall back to local context
@@ -102,6 +150,8 @@ export default function ProductDetailPage() {
 
     return () => clearInterval(interval);
   }, [product]);
+  
+  
 
   if (isLoading) {
     return (
@@ -159,7 +209,125 @@ export default function ProductDetailPage() {
     ? Math.round(((product.originalPrice - product.price) / product.originalPrice) * 100)
     : 0;
 
+  // const handleAddToCart = async () => {
+  //   try {
+  //     setIsAddingToCart(true);
+
+  //     const savedUser = localStorage.getItem('user');
+
+  //     if (!savedUser) {
+  //       throw new Error('Please sign in before adding items to cart.');
+  //     }
+
+  //     const user = JSON.parse(savedUser) as { id?: string | number };
+
+  //     if (!user?.id) {
+  //       throw new Error('Please sign in before adding items to cart.');
+  //     }
+
+  //     const requestBody: {
+  //       user_id: number;
+  //       sku: string;
+  //       customization: string;
+  //       quantity: number;
+  //     } = {
+  //       user_id: Number(user.id),
+  //       sku: product.sku,
+  //       customization: customName.trim(),
+  //       quantity,
+  //     };
+
+  //     // const response = await fetch('/api/cart', {
+  //     //   method: 'POST',
+  //     //   headers: {
+  //     //     'Content-Type': 'application/json',
+  //     //   },
+  //     //   body: JSON.stringify(requestBody),
+  //     // });
+
+  //     const formData = new FormData();
+
+  //     formData.append("user_id", String(user.id));
+  //     formData.append("sku", product.sku);
+  //     formData.append("quantity", String(quantity));
+  //     formData.append("customization", customName);
+
+  //     if (selectedColor) {
+  //       formData.append("colour", selectedColor);
+  //     }
+
+  //     if (customImage) {
+  //       formData.append("customer_image", customImage);
+  //     }
+
+  //     const response = await fetch("/api/cart", {
+  //       method: "POST",
+  //       body: formData,
+
+  //     }
+  //     );
+
+  //     for (const pair of formData.entries()) {
+  //       console.log(pair[0], pair[1]);
+  //     }
+
+  //     const text = await response.text();
+
+  //     console.log(text);
+
+  //     const data = JSON.parse(text);
+
+  //     if (!response.ok || !data?.success) {
+  //       throw new Error(data?.message || 'Failed to add product to cart');
+  //     }
+
+  //     addToCart({
+  //       product,
+  //       quantity,
+  //       customization: customName.trim() ? { customName: customName.trim() } : undefined,
+  //     });
+
+  //     window.dispatchEvent(new Event('cart-updated'));
+
+  //     setShowNotification(true);
+  //     setTimeout(() => setShowNotification(false), 3000);
+  //   } catch (addError) {
+  //     setError(addError instanceof Error ? addError.message : 'Failed to add product to cart');
+  //   } finally {
+  //     setIsAddingToCart(false);
+  //   }
+  // };
+
+
+
+
+
   const handleAddToCart = async () => {
+      // Require custom text
+  if (
+    Number(product.customizable) === 1 &&
+    customName.trim() === ""
+  ) {
+    setNotificationType("error");
+    setNotificationMessage("Please enter custom text.");
+    setShowNotification(true);
+
+    setTimeout(() => setShowNotification(false), 3000);
+    return;
+  }
+
+  // Require custom image
+  if (
+    Number(product.image_customizable) === 1 &&
+    !customImage
+  ) {
+    setNotificationType("error");
+    setNotificationMessage("Please upload a custom image.");
+    setShowNotification(true);
+
+    setTimeout(() => setShowNotification(false), 3000);
+    return;
+  }
     try {
       setIsAddingToCart(true);
 
@@ -187,15 +355,37 @@ export default function ProductDetailPage() {
         quantity,
       };
 
-      const response = await fetch('/api/cart', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(requestBody),
-      });
+      const formData = new FormData();
 
-      const data = await response.json();
+      formData.append("user_id", Number(user.id).toString());
+      formData.append("sku", product.sku);
+      formData.append("quantity", String(quantity));
+      formData.append("customization", customName);
+
+      if (selectedColor) {
+        formData.append("colour", selectedColor);
+      }
+
+      if (customImage) {
+        formData.append("customer_image", customImage);
+      }
+
+      const response = await fetch("/api/cart", {
+        method: "POST",
+        body: formData,
+
+      }
+      );
+
+      for (const pair of formData.entries()) {
+        console.log(pair[0], pair[1]);
+      }
+
+      const text = await response.text();
+
+      console.log(text);
+
+      const data = JSON.parse(text);
 
       if (!response.ok || !data?.success) {
         throw new Error(data?.message || 'Failed to add product to cart');
@@ -209,8 +399,13 @@ export default function ProductDetailPage() {
 
       window.dispatchEvent(new Event('cart-updated'));
 
-      setShowNotification(true);
-      setTimeout(() => setShowNotification(false), 3000);
+  setNotificationType("success");
+setNotificationMessage(
+  `Added to cart! ${customName ? `(${customName})` : ""}`
+);
+setShowNotification(true);
+
+setTimeout(() => setShowNotification(false), 3000);
     } catch (addError) {
       setError(addError instanceof Error ? addError.message : 'Failed to add product to cart');
     } finally {
@@ -218,72 +413,70 @@ export default function ProductDetailPage() {
     }
   };
 
-  const handleWishlist = async () => {
-    setWishlistError('');
-    setIsTogglingWishlist(true);
-
-    const savedUser = localStorage.getItem('user');
-
-    if (!savedUser) {
-      setError('Please sign in before adding items to wishlist.');
-      setIsTogglingWishlist(false);
-      return;
-    }
-
+  const getUserId = () => {
     try {
-      const user = JSON.parse(savedUser) as { id?: string | number };
+      const savedUser = localStorage.getItem('user');
 
-      if (!user?.id) {
-        setError('Please sign in before adding items to wishlist.');
-        setIsTogglingWishlist(false);
-        return;
+      if (!savedUser) {
+        return '';
       }
 
-      if (isWishlisted) {
-        // Remove from wishlist on server
-        const response = await fetch('/api/wishlist', {
-          method: 'DELETE',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ user_id: Number(user.id), product_id: product.id }),
-        });
-
-        const data = await response.json().catch(() => ({}));
-
-        if (!response.ok || (!data?.status && !data?.success && data?.success !== undefined)) {
-          throw new Error(data?.message || 'Failed to remove from wishlist');
-        }
-
-        removeFromWishlist(product.id);
-        setIsWishlisted(false);
-        setIsTogglingWishlist(false);
-        return;
-      }
-
-      // Add to wishlist
-      const formData = new FormData();
-      formData.append('user_id', String(user.id));
-      formData.append('product_id', product.id);
-
-      const response = await fetch('/api/wishlist', {
-        method: 'POST',
-        body: formData,
-      });
-
-      const data = await response.json();
-
-      if (!response.ok || (!data?.status && !data?.success)) {
-        throw new Error(data?.message || 'Failed to add product to wishlist');
-      }
-
-      addToWishlist(product.id);
-      setIsWishlisted(true);
-    } catch (err) {
-      setWishlistError(err instanceof Error ? err.message : 'Failed to toggle wishlist');
-    } finally {
-      setIsTogglingWishlist(false);
+      const parsedUser = JSON.parse(savedUser) as UserProfile;
+      return parsedUser?.id ? String(parsedUser.id) : '';
+    } catch {
+      return '';
     }
   };
 
+  const toggleWishlistOnServer = async (nextWishlisted: boolean) => {
+    const userId = getUserId();
+
+    if (!userId) {
+      throw new Error("User not logged in");
+    }
+
+    const response = await fetch("/api/wishlist", {
+      method: nextWishlisted ? "POST" : "DELETE",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        user_id: Number(userId),
+        product_id: Number(product.id),
+      }),
+    });
+
+    const data = await response.json();
+    nextWishlisted ? null : removeFromWishlist(product.id);
+
+    try {
+      const savedUser = localStorage.getItem('user');
+      if (!savedUser) return;
+      const user = JSON.parse(savedUser) as { id?: string | number };
+      if (!user?.id) return;
+
+      const res = await fetch(`/api/wishlist?user_id=${Number(user.id)}`);
+      if (!res.ok) return;
+      const data = await res.json();
+
+      // Normalized response includes `products` or `wishlist` with product ids
+      const products = data?.products || data?.wishlist || [];
+      const has = Array.isArray(products)
+        ? products.some((p: any) => String(p.id ?? p.product_id ?? p.productId) === String(product.id))
+        : false;
+
+      setIsWishlisted(Boolean(has));
+    } catch (err) {
+      // silently ignore server check errors; UI will fall back to local context
+    }
+
+
+    if (!response.ok || (!data.success && !data.status)) {
+      throw new Error(data.message || "Failed to update wishlist");
+    }
+
+    return data;
+  };
   const renderStars = (rating: number) => {
     return (
       <div className="flex gap-0.5">
@@ -311,8 +504,13 @@ export default function ProductDetailPage() {
         {/* Image Gallery */}
         <div className="relative">
           <ProductImageGallery
-            images={product.images || [product.image]}
+            images={
+              selectedImages.length
+                ? selectedImages
+                : product.variants?.[0]?.images || []
+            }
             productName={product.name}
+            defaultImageIndex={0}
           />
           {discount > 0 && (
             <div
@@ -376,6 +574,36 @@ export default function ProductDetailPage() {
             </div>
           </div>
 
+          {/* Color */}
+          {product.variants?.length > 0 && (
+            <div className="mb-6">
+              <p className="text-sm font-semibold text-gray-700 mb-3">Color:</p>
+              <div className="flex gap-4 flex-wrap items-center">
+                {product.variants.map((variant, index) => {
+                  const trimmedColor = variant.color;
+                  const colorHex = getColorHex(trimmedColor);
+                  const isSelected = selectedColor === trimmedColor;
+                  return (
+                    <div key={trimmedColor} className="flex flex-col items-center gap-2">
+                      <button
+                        onClick={() => {
+                          setSelectedColor(variant.color);
+                          setSelectedColorIndex(index);
+                          setSelectedImages(variant.images);
+                        }}
+                        className={`w-12 h-12 rounded-full border-3 transition ${isSelected ? 'border-amber-600 shadow-lg' : 'border-gray-300 hover:border-gray-400'
+                          }`}
+                        style={{ backgroundColor: colorHex }}
+                        title={trimmedColor}
+                      />
+                      <span className="text-xs font-medium text-gray-600">{trimmedColor}</span>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          )}
+
           {/* Description */}
           <p
             className="text-gray-700 text-base leading-relaxed mb-8"
@@ -385,12 +613,26 @@ export default function ProductDetailPage() {
           />
 
           {/* Customization Form */}
-          {product.customizable && (
+          {/* {product.customizable && (
             <CustomizationForm
               productName={product.name}
               onCustomize={(name) => setCustomName(name)}
             />
-          )}
+          )} */}
+
+          {(Number(product.customizable) === 1 ||
+            Number(product.image_customizable) === 1) && (
+              <CustomizationForm
+                productName={product.name}
+                customizable={Number(product.customizable) === 1}
+                imageCustomizable={Number(product.image_customizable) === 1}
+                onCustomize={(text, image) => {
+                  setCustomName(text);
+                  setCustomImage(image);
+                }}
+              />
+            )}
+
 
           {/* Quantity Selector */}
           <div className="mb-6 mt-6">
@@ -429,7 +671,7 @@ export default function ProductDetailPage() {
 
             <div className="flex gap-3">
               <button
-                onClick={handleWishlist}
+                onClick={() => toggleWishlistOnServer(!isWishlisted)}
                 disabled={isTogglingWishlist}
                 className="flex-1 py-3 border-2 border-gray-300 font-semibold rounded hover:border-amber-600 transition flex items-center justify-center gap-2"
               >
@@ -477,11 +719,23 @@ export default function ProductDetailPage() {
           </div>
 
           {/* Notification */}
-          {showNotification && (
+          {/* {showNotification && (
             <div className="fixed bottom-4 right-4 bg-green-500 text-white px-6 py-3 rounded-lg shadow-lg animate-fade-in">
               Added to cart! {customName && `(${customName})`}
             </div>
-          )}
+          )} */}
+
+          {showNotification && (
+  <div
+    className={`fixed bottom-4 right-4 px-6 py-3 rounded-lg shadow-lg text-white transition-all duration-300 ${
+      notificationType === "success"
+        ? "bg-green-500"
+        : "bg-red-500"
+    }`}
+  >
+    {notificationMessage}
+  </div>
+)}
         </div>
       </div>
 

@@ -42,6 +42,7 @@ export interface CartExtra {
   diameter?: string | null;
   weight?: string | null;
   customization?: string | null;
+  customer_image?: string | null;
 }
 
 export interface RemoteCartItem {
@@ -75,9 +76,17 @@ function mapCartApiItemToCartItem(item: CartApiItem): RemoteCartItem {
   };
 
   const mappedProduct = mapApiProductToProduct(productSource);
-  const imageList = (item.image_urls?.length ? item.image_urls : item.images || [])
-    .map(sanitizeImageUrl)
-    .filter(Boolean);
+const imageList = (item.images || [])
+  .map((img: any) => {
+    if (typeof img === "string") {
+      return sanitizeImageUrl(img);
+    }
+
+    return img?.image
+      ? `http://nextlayer.soon.it/images/${img.image}`
+      : "";
+  })
+  .filter(Boolean);
 
   return {
     cartId: String(item.cart_id ?? item.id ?? item.product_id ?? mappedProduct.id),

@@ -1,5 +1,28 @@
 import { Product } from './types';
 
+// export interface ApiProduct {
+//   id: string | number;
+//   product_name: string;
+//   category: string;
+//   subcategory?: string | null;
+//   sku: string;
+//   price: string;
+//   stock: string | number;
+//   description: string;
+//   images?: string[];
+//   status?: string;
+//   created_at?: string;
+//   customizable?: boolean;
+//   image_urls?: string[];
+//   color?: string;
+// }
+
+export interface ProductVariant {
+  color: string;
+  images: string[];
+  image_urls: string[];
+}
+
 export interface ApiProduct {
   id: string | number;
   product_name: string;
@@ -9,11 +32,17 @@ export interface ApiProduct {
   price: string;
   stock: string | number;
   description: string;
+
   images?: string[];
+  image_urls?: string[];
+
+  variants?: ProductVariant[];
+
   status?: string;
   created_at?: string;
   customizable?: boolean;
-  image_urls?: string[];
+  image_customizable?: boolean;
+  color?: string;
 }
 
 export interface ProductsApiResponse {
@@ -52,28 +81,60 @@ export interface ProductSearchApiResponse {
 const DEFAULT_IMAGE = 'https://placehold.co/800x800?text=Product';
 
 export function mapApiProductToProduct(apiProduct: ApiProduct): Product {
-  const imageList = apiProduct.image_urls?.length
+ const imageList =
+  apiProduct.variants?.[0]?.image_urls?.length
+    ? apiProduct.variants[0].image_urls
+    : apiProduct.variants?.[0]?.images?.length
+    ? apiProduct.variants[0].images
+    : apiProduct.image_urls?.length
     ? apiProduct.image_urls
     : apiProduct.images?.length
-      ? apiProduct.images
-      : [DEFAULT_IMAGE];
+    ? apiProduct.images
+    : [DEFAULT_IMAGE];
 
-  return {
-    id: String(apiProduct.id),
-    name: apiProduct.product_name,
-    vendor: apiProduct.subcategory || apiProduct.category || '3D Print Store',
-    category: apiProduct.category || 'Uncategorized',
-    price: Number(apiProduct.price) || 0,
-    image: imageList[0] || DEFAULT_IMAGE,
-    images: imageList,
-    description: apiProduct.description || '',
-    rating: 0,
-    reviews: 0,
-    inStock: Number(apiProduct.stock) > 0,
-    tags: [apiProduct.category, apiProduct.subcategory].filter(Boolean) as string[],
-    sku: apiProduct.sku,
-    customizable: Boolean(apiProduct.customizable),
-  };
+  // Parse color - handle both JSON array string and plain string
+const color =
+  apiProduct.variants?.[0]?.color ||
+  apiProduct.color ||
+  "Natural"; 
+ return {
+  id: String(apiProduct.id),
+  name: apiProduct.product_name,
+  vendor: apiProduct.subcategory || apiProduct.category || "3D Print Store",
+  category: apiProduct.category || "Uncategorized",
+  price: Number(apiProduct.price) || 0,
+
+  image: imageList[0] || DEFAULT_IMAGE,
+  images: imageList,
+
+  description: apiProduct.description || "",
+
+  rating: 0,
+  reviews: 0,
+
+  inStock: Number(apiProduct.stock) > 0,
+
+  tags: [apiProduct.category, apiProduct.subcategory].filter(Boolean) as string[],
+
+  sku: apiProduct.sku,
+
+  color,
+
+  customizable: Boolean(apiProduct.customizable),
+
+  image_customizable: Boolean(apiProduct.image_customizable),
+
+  // ✅ ADD THIS
+  variants:
+    apiProduct.variants?.map((variant) => ({
+      color: variant.color,
+      images:
+        variant.image_urls?.length
+          ? variant.image_urls
+          : variant.images ?? [],
+      image_urls: variant.image_urls ?? variant.images ?? [],
+    })) ?? [],
+};
 }
 
 export async function fetchProducts(): Promise<Product[]> {

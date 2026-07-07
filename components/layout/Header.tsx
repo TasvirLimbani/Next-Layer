@@ -25,54 +25,124 @@ export default function Header() {
 
   const wishlistCount = wishlist.length;
 
-  useEffect(() => {
-    let isActive = true;
+//   useEffect(() => {
+//     let isActive = true;
 
-    const refreshCartCount = async () => {
-      try {
-        const savedUser = localStorage.getItem('user');
+//     const refreshCartCount = async () => {
+//       try {
+//         const savedUser = localStorage.getItem('user');
 
-        if (!savedUser) {
-          if (isActive) {
-            setCartCount(0);
-          }
-          return;
-        }
+//         if (!savedUser) {
+//           if (isActive) {
+//             setCartCount(0);
+//           }
+//           return;
+//         }
 
-        const user = JSON.parse(savedUser) as { id?: string | number };
+//         const user = JSON.parse(savedUser) as { id?: string | number };
 
-        if (!user?.id) {
-          if (isActive) {
-            setCartCount(0);
-          }
-          return;
-        }
+//         if (!user?.id) {
+//           if (isActive) {
+//             setCartCount(0);
+//           }
+//           return;
+//         }
 
-        const remoteCart = await fetchUserCart(String(user.id));
+//       const remoteCart = await fetchUserCart(String(user.id));
 
-        if (isActive) {
-          setCartCount(remoteCart.totalQuantity);
-        }
-      } catch {
-        if (isActive) {
-          setCartCount(0);
-        }
+// const count =
+//   remoteCart?.items?.reduce(
+//     (sum, item) => sum + Number(item.quantity || 0),
+//     0
+//   ) || 0;
+
+// if (isActive) {
+//   setCartCount(count);
+// }
+//       } catch {
+//         if (isActive) {
+//           setCartCount(0);
+//         }
+//       }
+//     };
+
+//     refreshCartCount();
+
+//     const handleCartUpdate = () => {
+//       refreshCartCount();
+//     };
+
+//     window.addEventListener('cart-updated', handleCartUpdate);
+
+//     return () => {
+//       isActive = false;
+//       window.removeEventListener('cart-updated', handleCartUpdate);
+//     };
+//   }, []);
+
+useEffect(() => {
+  let isActive = true;
+
+  const refreshCartCount = async () => {
+    try {
+      const savedUser = localStorage.getItem("user");
+
+      if (!savedUser) {
+        if (isActive) setCartCount(0);
+        return;
       }
-    };
 
+      const user = JSON.parse(savedUser);
+
+      if (!user?.id) {
+        if (isActive) setCartCount(0);
+        return;
+      }
+
+      const remoteCart = await fetchUserCart(String(user.id));
+
+      const count = Array.isArray(remoteCart.items)
+        ? remoteCart.items.reduce(
+            (total, item) => total + Number(item.quantity || 0),
+            0
+          )
+        : 0;
+
+      if (isActive) {
+        setCartCount(count);
+      }
+    } catch (err) {
+      console.log(err);
+      if (isActive) {
+        setCartCount(0);
+      }
+    }
+  };
+
+  refreshCartCount();
+
+  const handleRefresh = () => {
     refreshCartCount();
+  };
 
-    const handleCartUpdate = () => {
+  window.addEventListener("cart-updated", handleRefresh);
+  window.addEventListener("focus", handleRefresh);
+
+  const handleVisibility = () => {
+    if (!document.hidden) {
       refreshCartCount();
-    };
+    }
+  };
 
-    window.addEventListener('cart-updated', handleCartUpdate);
+  document.addEventListener("visibilitychange", handleVisibility);
 
-    return () => {
-      isActive = false;
-      window.removeEventListener('cart-updated', handleCartUpdate);
-    };
-  }, []);
+  return () => {
+    isActive = false;
+    window.removeEventListener("cart-updated", handleRefresh);
+    window.removeEventListener("focus", handleRefresh);
+    document.removeEventListener("visibilitychange", handleVisibility);
+  };
+}, []);
 
   useEffect(() => {
     let isActive = true;
@@ -201,7 +271,7 @@ export default function Header() {
     <header className="sticky top-0 z-50 bg-white border-b border-gray-200">
       {/* Top banner */}
       <div className="bg-gray-100 text-center py-2 text-sm text-gray-700">
-        Free shipping  for all orders over ₹99
+        Free shipping  for all orders over ₹999
       </div>
 
       {/* Main header */}

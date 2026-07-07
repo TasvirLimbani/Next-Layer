@@ -243,21 +243,12 @@ export default function FilamentDetailPage() {
                 throw new Error('Please sign in before adding items to cart.');
             }
 
-            const requestBody = {
-                user_id: Number(user.id),
-                sku: filament.sku,
-                quantity,
-                colour: selectedColor || '',
-                diameter: selectedDiameter || filament.diameter,
-                weight: selectedWeight || filament.weight,
-            };
-
-            const response = await fetch('/api/cart', {
-                method: 'POST',
+            const response = await fetch('/api/delete', {
+                method: 'DELETE',
                 headers: {
                     'Content-Type': 'application/json',
                 },
-                body: JSON.stringify(requestBody),
+                body: JSON.stringify({ id: Number(user.id) }),
             });
 
             const data = await response.json().catch(() => ({}));
@@ -282,6 +273,7 @@ export default function FilamentDetailPage() {
                 tags: [filament.slug, selectedDiameter || filament.diameter, selectedWeight || filament.weight, selectedColor || ''],
                 sku: `FLM-${String(filament.id).padStart(4, '0')}`,
                 customizable: false,
+                image_customizable: false,
             };
 
             addToCart({ product: cartProduct, quantity, customization: { customName: undefined } });

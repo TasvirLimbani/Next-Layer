@@ -33,6 +33,15 @@ export default function CheckoutPage() {
   const [loadingCart, setLoadingCart] = useState(true);
   const [cartError, setCartError] = useState('');
   const [savedAddress, setSavedAddress] = useState<AddressRecord | null>(null);
+  const [checkoutCart, setCheckoutCart] = useState<RemoteCartItem[]>([]);
+
+  useEffect(() => {
+    if (remoteCart.length > 0) {
+      setCheckoutCart(remoteCart);
+    } else if (cart.length > 0) {
+      setCheckoutCart(cart as any);
+    }
+  }, [remoteCart, cart]);
 
   const [formData, setFormData] = useState({
     email: '',
@@ -79,6 +88,8 @@ export default function CheckoutPage() {
       }
 
       const remote = await fetchUserCart(String(user.id));
+      console.log("Cart Data:::::::::::::::::", remote.items);
+      console.log(JSON.stringify(remote.items, null, 2));
       setRemoteCart(remote.items);
 
       applyUserProfile(user, null);
@@ -111,10 +122,47 @@ export default function CheckoutPage() {
     loadCart();
   }, [loadCart]);
 
-  const visibleCart = remoteCart.length > 0 ? remoteCart : cart;
+  const visibleCart = checkoutCart;
   const subtotal = visibleCart.reduce((sum, item) => sum + item.product.price * item.quantity, 0);
   const total = subtotal;
 
+
+  const clearServerCart = async () => {
+    try {
+
+      const savedUser = localStorage.getItem('user');
+
+      if (!savedUser) {
+        setRemoteCart([]);
+        return;
+      }
+      const user = JSON.parse(savedUser) as UserProfile;
+
+      await Promise.all(
+        visibleCart.map(async (item: any) => {
+          // item.id = cart table id
+          if (!item.id) return;
+
+          await fetch("http://nextlayer.soon.it/api/Cart/clear.php", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({
+              user_id: user.id,
+            }),
+          });
+        })
+      );
+
+      clearCart();
+      setRemoteCart([]);
+      setCheckoutCart([]);
+
+    } catch (err) {
+      console.error(err);
+    }
+  };
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
@@ -126,11 +174,77 @@ export default function CheckoutPage() {
     setTimeout(() => {
       setIsProcessing(false);
       setOrderPlaced(true);
-      clearCart();
+      // clearCart();
     }, 2000);
   };
 
-  const handleWhatsAppCheckout = () => {
+  // const handleWhatsAppCheckout = () => {
+  //   const orderId = `ORD-${Date.now()}`;
+
+  //   let message = `🛍️ *New Order*\n\n`;
+
+  //   message += `📦 Order ID: ${orderId}\n\n`;
+
+  //   message += `👤 Customer Details\n`;
+  //   message += `Name: ${formData.firstName}\n`;
+  //   message += `Email: ${formData.email}\n`;
+  //   message += `Address: ${formData.address}\n`;
+  //   message += `City: ${formData.city}\n`;
+  //   message += `State: ${formData.state}\n`;
+  //   message += `Zip Code: ${formData.zipCode}\n\n`;
+
+  //   message += `🛒 Order Items\n`;
+
+  //   // visibleCart.forEach((item, index) => {
+  //   //   message += `${index + 1}. ${item.product.name}\n`;
+  //   //   message += `   Qty: ${item.quantity}\n`;
+  //   //   message += `   Price: ₹${item.product.price}\n`;
+
+  //   //   if (
+  //   //     typeof item.customization === "string" &&
+  //   //     item.customization.trim()
+  //   //   ) {
+  //   //     message += `   Custom: ${item.customization}\n`;
+  //   //   }
+
+  //   //   message += `\n`;
+  //   // });
+  //   visibleCart.forEach((item, index) => {
+  //     message += `${index + 1}. ${item.product.name}\n`;
+  //     message += `SKU: ${item.product.sku || "N/A"}\n`;
+  //     message += `Qty: ${item.quantity}\n`;
+  //     message += `Price: ₹${item.product.price}\n`;
+
+  //     // Customization
+  //     if (item.extra?.customization) {
+  //       message += `Customization: ${item.extra.customization}\n`;
+  //     }
+
+  //     // Customer Image
+  //     if (item.extra?.customer_image) {
+  //       message += `Image: ${item.extra.customer_image}\n`;
+  //     }
+
+  //     message += "\n";
+  //   });
+
+
+
+  //   message += `📌 Subtotal: ₹${subtotal.toFixed(2)}\n`;
+
+  //   message += `💰 Total: ₹${total.toFixed(2)}\n`;
+
+  //   const phoneNumber = "919723553038"; // Your WhatsApp Number
+
+  //   const whatsappUrl = `https://wa.me/${phoneNumber}?text=${encodeURIComponent(
+  //     message
+  //   )}`;
+
+  //   window.open(whatsappUrl, "_blank");
+  // };
+
+
+  const handleWhatsAppCheckout = async () => {
     const orderId = `ORD-${Date.now()}`;
 
     let message = `🛍️ *New Order*\n\n`;
@@ -147,49 +261,96 @@ export default function CheckoutPage() {
 
     message += `🛒 Order Items\n`;
 
-    // visibleCart.forEach((item, index) => {
-    //   message += `${index + 1}. ${item.product.name}\n`;
-    //   message += `   Qty: ${item.quantity}\n`;
-    //   message += `   Price: ₹${item.product.price}\n`;
-
-    //   if (
-    //     typeof item.customization === "string" &&
-    //     item.customization.trim()
-    //   ) {
-    //     message += `   Custom: ${item.customization}\n`;
-    //   }
-
-    //   message += `\n`;
-    // });
     visibleCart.forEach((item, index) => {
       message += `${index + 1}. ${item.product.name}\n`;
-
-      message += `SKU: ${item.product.sku || 'N/A'}\n`;
+      message += `SKU: ${item.product.sku || "N/A"}\n`;
       message += `Qty: ${item.quantity}\n`;
       message += `Price: ₹${item.product.price}\n`;
 
-      if (
-        typeof item.customization === "string" &&
-        item.customization.trim()
-      ) {
-        message += `Custom: ${item.customization}\n`;
+      if (item.extra?.customization) {
+        message += `Customization: ${item.extra.customization}\n`;
       }
 
-      message += `\n`;
+      if (item.extra?.customer_image) {
+        message += `Image: ${item.extra.customer_image}\n`;
+      }
+
+      message += "\n";
     });
 
+    message += `📌 Subtotal: ₹${subtotal.toFixed(2)}\n`;
     message += `💰 Total: ₹${total.toFixed(2)}\n`;
+    clearCart();
+    const savedUser = localStorage.getItem('user');
 
-    const phoneNumber = "919723553038"; // Your WhatsApp Number
+    if (!savedUser) {
+      setRemoteCart([]);
+      return;
+    }    const user = JSON.parse(savedUser) as UserProfile;
+
+      const requestBody: {
+        user_id: number;
+       
+      } = {
+        user_id: Number(user.id)
+        
+      };
+    // await fetch("api/delete", {
+    //   method: "DELETE",
+    //   headers: {
+    //     "Content-Type": "application/json",
+    //   },
+    //   body: JSON.stringify({
+    //     user_id: user.id,
+        
+    //   }),
+    // });
+
+
+  const response = await fetch("/api/delete", {
+  method: "DELETE",
+  headers: {
+    "Content-Type": "application/json",
+  },
+  body: JSON.stringify({
+    user_id: user.id,
+  }),
+});
+
+const result = await response.json();
+
+if (result.status) {
+  clearCart();
+  setRemoteCart([]);
+  setCheckoutCart([]);
+
+
+  localStorage.removeItem("cart");
+  // Notify Header to refresh cart count
+  window.dispatchEvent(new Event("cart-updated"));
+}
+
+
+    const phoneNumber = "919723553038";
+    // clearServerCart();  
 
     const whatsappUrl = `https://wa.me/${phoneNumber}?text=${encodeURIComponent(
       message
     )}`;
 
+
+
+    // Open WhatsApp first
     window.open(whatsappUrl, "_blank");
+
+    // Show success page immediately
+    setOrderPlaced(true);
+
+    // Clear cart in background
+
   };
 
-  if (!loadingCart && visibleCart.length === 0 && !orderPlaced) {
+  if (!loadingCart && !orderPlaced && visibleCart.length === 0) {
     return (
       <div className="max-w-7xl mx-auto px-4 py-16 md:py-24">
         <div className="text-center">
@@ -207,6 +368,7 @@ export default function CheckoutPage() {
       </div>
     );
   }
+
 
   if (loadingCart && !orderPlaced) {
     return (
@@ -226,7 +388,10 @@ export default function CheckoutPage() {
     );
   }
 
+
+
   if (orderPlaced) {
+
     return (
       <div className="max-w-2xl mx-auto px-4 py-16 md:py-24">
         <div className="text-center border border-green-200 rounded-lg p-8 bg-green-50">
@@ -508,4 +673,4 @@ export default function CheckoutPage() {
       </div>
     </div>
   );
-}
+}  

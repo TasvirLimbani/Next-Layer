@@ -65,94 +65,85 @@ export async function GET(req: NextRequest) {
 // ======================
 export async function POST(req: NextRequest) {
   try {
-    const body = await req.json();
+    const formData = await req.formData();
 
-    const {
-      user_id,
-      sku,
-      quantity,
-      customization,
-      colour,
-      diameter,
-      weight,
-    } = body;
+    const user_id = formData.get("user_id")?.toString();
+    const sku = formData.get("sku")?.toString();
+    const quantity = formData.get("quantity")?.toString();
+    const customization = formData.get("customization")?.toString();
+    const colour = formData.get("colour")?.toString();
+    const diameter = formData.get("diameter")?.toString();
+    const weight = formData.get("weight")?.toString();
+
+    const customer_image = formData.get("customer_image") as File | null;
 
     if (!user_id || !sku || !quantity) {
       return NextResponse.json(
         {
           success: false,
-          message: 'user_id, sku and quantity are required',
+          message: "user_id, sku and quantity are required",
         },
         { status: 400 }
       );
     }
 
-    const payload: Record<string, any> = {
-      user_id,
-      sku,
-      quantity,
-    };
+    const phpForm = new FormData();
 
-    // Product
-    if (customization) {
-      payload.customization = customization;
-    }
+    phpForm.append("user_id", user_id);
+    phpForm.append("sku", sku);
+    phpForm.append("quantity", quantity);
 
-    // Filament
-    if (colour) {
-      payload.colour = colour;
-    }
+    if (customization)
+      phpForm.append("customization", customization);
 
-    if (diameter) {
-      payload.diameter = diameter;
-    }
+    if (colour)
+      phpForm.append("colour", colour);
 
-    if (weight) {
-      payload.weight = weight;
+    if (diameter)
+      phpForm.append("diameter", diameter);
+
+    if (weight)
+      phpForm.append("weight", weight);
+
+    if (customer_image) {
+      phpForm.append("customer_image", customer_image);
     }
 
     const res = await fetch(
-      'http://nextlayer.soon.it/api/Cart/add.php',
+      "http://nextlayer.soon.it/api/Cart/add.php",
       {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(payload),
+        method: "POST",
+        body: phpForm,
       }
     );
 
     const data = await res.json();
 
-    if (!data?.status) {
+    if (!data.status) {
       return NextResponse.json(
         {
           success: false,
-          message: data?.message || 'Failed to add cart',
+          message: data.message,
         },
         { status: 400 }
       );
     }
 
-    return NextResponse.json(
-      {
-        success: true,
-        message: data.message,
-      },
-      { status: 200 }
-    );
-  } catch (error) {
+    return NextResponse.json({
+      success: true,
+      message: data.message,
+    });
+
+  } catch (e) {
     return NextResponse.json(
       {
         success: false,
-        message: 'Internal Server Error',
-        error: error instanceof Error ? error.message : String(error),
+        message: e instanceof Error ? e.message : "Unknown error",
       },
       { status: 500 }
     );
   }
 }
-
 // ======================
 // DELETE - Delete Cart
 // ======================

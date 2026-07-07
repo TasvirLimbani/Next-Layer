@@ -7,6 +7,8 @@ import Image from 'next/image';
 import { useAppContext } from '@/lib/context';
 import { useEffect, useState } from 'react';
 import { UserProfile } from '@/lib/types';
+// import router from 'next/dist/shared/lib/router/router';
+import { useRouter } from 'next/navigation';
 
 interface ProductCardProps {
   product: Product;
@@ -22,15 +24,13 @@ export default function ProductCard({
   disableHoverEffects = false,
 }: ProductCardProps) {
   const { addToCart, addToWishlist, removeFromWishlist, isInWishlist } = useAppContext();
-  const [isWishlisted, setIsWishlisted] = useState(isInWishlist(product.id));
+const isWishlisted = isInWishlist(product.id);
   const [isUpdatingWishlist, setIsUpdatingWishlist] = useState(false);
   const discount = product.originalPrice
     ? Math.round(((product.originalPrice - product.price) / product.originalPrice) * 100)
     : 0;
 
-  useEffect(() => {
-    setIsWishlisted(isInWishlist(product.id));
-  }, [isInWishlist, product.id]);
+const router = useRouter();
 
   const getUserId = () => {
     try {
@@ -47,30 +47,35 @@ export default function ProductCard({
     }
   };
 
-  const toggleWishlistOnServer = async (nextWishlisted: boolean) => {
-    const userId = getUserId();
+const toggleWishlistOnServer = async (nextWishlisted: boolean) => {
+  const userId = getUserId();
 
-    if (!userId) {
-      return;
-    }
+  console.log("User ID:", userId);
+  console.log("Product ID:", product.id);
+  console.log("Product:", product);
 
-    const response = await fetch('/api/wishlist', {
-      method: nextWishlisted ? 'POST' : 'DELETE',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        user_id: userId,
-        product_id: product.id,
-      }),
-    });
+  if (!userId) {
+    throw new Error("User not logged in");
+  }
 
-    const data = await response.json();
+  const response = await fetch("/api/wishlist", {
+    method: nextWishlisted ? "POST" : "DELETE",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+      user_id: Number(userId),
+      product_id: Number(product.id),
+    }),
+  });
 
-    if (!response.ok || (!data?.status && !data?.success)) {
-      throw new Error(data?.message || 'Failed to update wishlist');
-    }
-  };
+  const data = await response.json();
+  console.log("Wishlist Response:", data);
+
+  if (!response.ok || (!data?.status && !data?.success)) {
+    throw new Error(data?.message || "Failed to update wishlist");
+  }
+};
 
   const handleAddToCart = (e: React.MouseEvent) => {
     e.preventDefault();
@@ -81,37 +86,32 @@ export default function ProductCard({
     });
   };
 
-  const handleWishlist = (e: React.MouseEvent) => {
-    e.preventDefault();
-    e.stopPropagation();
-    if (isUpdatingWishlist) {
-      return;
+const handleWishlist = async (e: React.MouseEvent) => {
+  e.preventDefault();
+  e.stopPropagation();
+
+  if (isUpdatingWishlist) return;
+
+  const nextWishlisted = !isWishlisted;
+
+  setIsUpdatingWishlist(true);
+
+  try {
+    await toggleWishlistOnServer(nextWishlisted);
+
+    if (nextWishlisted) {
+      addToWishlist(product.id);
+    } else {
+      removeFromWishlist(product.id);
     }
 
-    const nextWishlisted = !isWishlisted;
-
-    setIsUpdatingWishlist(true);
-
-    Promise.resolve()
-      .then(() => toggleWishlistOnServer(nextWishlisted))
-      .then(() => {
-        if (nextWishlisted) {
-          addToWishlist(product.id);
-        } else {
-          removeFromWishlist(product.id);
-        }
-
-        setIsWishlisted(nextWishlisted);
-        onWishlistChange?.();
-      })
-      .catch(() => {
-        // keep local state unchanged if the server call fails
-      })
-      .finally(() => {
-        setIsUpdatingWishlist(false);
-      });
-  };
-
+    onWishlistChange?.();
+  } catch (error) {
+    console.error("Wishlist Error:", error);
+  } finally {
+    setIsUpdatingWishlist(false);
+  }
+};
   const handleRemoveWishlist = (e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
@@ -126,7 +126,7 @@ export default function ProductCard({
       .then(() => toggleWishlistOnServer(false))
       .then(() => {
         removeFromWishlist(product.id);
-        setIsWishlisted(false);
+
         onWishlistChange?.();
       })
       .catch(() => {
@@ -158,7 +158,7 @@ export default function ProductCard({
         {/* Image Container */}
         <div className="relative bg-gray-100 rounded-lg overflow-hidden mb-4 aspect-square">
           <Image
-            src={`/api/image-proxy?url=${encodeURIComponent(product.image)}`}
+          src={product.image}
             alt={product.name}
             fill
             unoptimized
@@ -192,14 +192,23 @@ export default function ProductCard({
               : 'translate-y-full group-hover:translate-y-0 transition-transform duration-300'
               }`}
           >
-            <button
+            {/* <button
               onClick={handleAddToCart}
               className="flex-1 flex items-center justify-center gap-2 bg-gray-900 text-white py-2 rounded hover:opacity-80 transition"
               disabled={!product.inStock}
             >
               <ShoppingCart size={16} />
               <span className="text-sm">ADD</span>
-            </button>
+            </button> */}
+
+            <button
+  onClick={() => router.push(`/product/${product.id}`)}
+  className="flex-1 flex items-center justify-center gap-2 bg-gray-900 text-white py-2 rounded hover:opacity-80 transition"
+  disabled={!product.inStock}
+>
+  <ShoppingCart size={16} />
+  <span className="text-sm">ADD</span>
+</button>
             {showDeleteWishlistButton ? (
               <button
                 onClick={handleRemoveWishlist}

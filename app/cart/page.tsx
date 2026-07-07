@@ -16,53 +16,43 @@ export default function CartPage() {
   const [deletingId, setDeletingId] = useState('');
 
   const loadCart = useCallback(async () => {
-    let isActive = true;
-
     try {
-      const savedUser = localStorage.getItem('user');
+      setLoading(true);
+
+      // Get logged in user from localStorage
+      const savedUser = localStorage.getItem("user");
 
       if (!savedUser) {
-        if (isActive) {
-          setCart([]);
-          setGrandTotal(0);
-          setError('No user found in localStorage.');
-        }
-        return;
-      }
-
-      const user = JSON.parse(savedUser) as UserProfile;
-
-      if (!user?.id) {
-        if (isActive) {
-          setCart([]);
-          setGrandTotal(0);
-          setError('No valid user id found in localStorage.');
-        }
-        return;
-      }
-
-      const remoteCart = await fetchUserCart(String(user.id));
-
-      if (isActive) {
-        setCart(remoteCart.items);
-        setGrandTotal(remoteCart.grandTotal);
-        setError('');
-      }
-    } catch {
-      if (isActive) {
         setCart([]);
         setGrandTotal(0);
-        setError('Failed to load your cart.');
+        setError("Please login first.");
+        return;
       }
-    } finally {
-      if (isActive) {
-        setLoading(false);
-      }
-    }
 
-    return () => {
-      isActive = false;
-    };
+      const user = JSON.parse(savedUser);
+
+      const userId = user?.id || user?.user_id;
+
+      if (!userId) {
+        setCart([]);
+        setGrandTotal(0);
+        setError("User ID not found.");
+        return;
+      }
+
+      const remoteCart = await fetchUserCart(String(userId));
+
+      setCart(remoteCart.items);
+      setGrandTotal(remoteCart.grandTotal);
+      setError("");
+    } catch (err) {
+      console.error(err);
+      setCart([]);
+      setGrandTotal(0);
+      setError("Failed to load your cart.");
+    } finally {
+      setLoading(false);
+    }
   }, []);
 
   useEffect(() => {
@@ -108,7 +98,7 @@ export default function CartPage() {
       <div className="max-w-7xl mx-auto px-4 py-16 md:py-24">
         <div className="space-y-4">
           <div className="h-10 w-48 rounded bg-gray-100 animate-pulse" />
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 lg:gap-10">
             <div className="lg:col-span-2 space-y-4">
               {Array.from({ length: 2 }).map((_, index) => (
                 <div key={index} className="h-32 rounded-lg bg-gray-100 animate-pulse" />
@@ -154,10 +144,10 @@ export default function CartPage() {
           <div className="space-y-4">
             {cart.map((item) => (
               <div
-                key={item.cartId}
-                className="border border-gray-200 rounded-lg p-4 flex gap-4 hover:shadow-sm transition"
-              >
-                <div className="relative w-24 h-24 bg-gray-100 rounded-lg flex-shrink-0">
+  key={item.cartId}
+  className="border border-gray-200 rounded-xl p-4 flex flex-col sm:flex-row gap-4 sm:items-center hover:shadow-md transition bg-white"
+>
+              <div className="relative w-full sm:w-24 h-40 sm:h-24 bg-gray-100 rounded-lg overflow-hidden flex-shrink-0">
                   <Image
                     src={`/api/image-proxy?url=${encodeURIComponent(item.product.image)}`}
                     alt={item.product.name}
@@ -166,7 +156,7 @@ export default function CartPage() {
                   />
                 </div>
 
-                <div className="flex-1 min-w-0">
+           <div className="flex-1 min-w-0 space-y-1">
                   <Link href={`/shop/${item.product.id}`}>
                     <h3 className="font-semibold hover:text-amber-700 transition line-clamp-1">
                       {item.product.name}
@@ -174,38 +164,58 @@ export default function CartPage() {
                   </Link>
                   <p className="text-sm text-gray-600 mb-2">{item.product.vendor}</p>
 
-                  {item.extra && (
-                    <div className="flex flex-wrap gap-2 mb-2">
-                      {item.extra.customization && (
-                        <span className="text-xs bg-gray-100 px-2 py-1 rounded">
-                          Custom: {item.extra.customization}
-                        </span>
-                      )}
+      {item.extra && (
+  <div className="mt-2 space-y-2">
+    <div className="flex flex-wrap gap-2">
+      {item.extra.customization && (
+        <span className="text-xs bg-gray-100 px-2 py-1 rounded-full">
+          Custom: {item.extra.customization}
+        </span>
+      )}
 
-                      {item.extra.colour && (
-                        <span className="text-xs bg-gray-100 px-2 py-1 rounded">
-                          Colour: {item.extra.colour}
-                        </span>
-                      )}
+      {item.extra.colour && (
+        <span className="text-xs bg-gray-100 px-2 py-1 rounded-full">
+          Colour: {item.extra.colour}
+        </span>
+      )}
 
-                      {item.extra.diameter && (
-                        <span className="text-xs bg-gray-100 px-2 py-1 rounded">
-                          Diameter: {item.extra.diameter}
-                        </span>
-                      )}
+      {item.extra.diameter && (
+        <span className="text-xs bg-gray-100 px-2 py-1 rounded-full">
+          Diameter: {item.extra.diameter}
+        </span>
+      )}
 
-                      {item.extra.weight && (
-                        <span className="text-xs bg-gray-100 px-2 py-1 rounded">
-                          Weight: {item.extra.weight}
-                        </span>
-                      )}
-                    </div>
-                  )}
+      {item.extra.weight && (
+        <span className="text-xs bg-gray-100 px-2 py-1 rounded-full">
+          Weight: {item.extra.weight}
+        </span>
+      )}
+    </div>
+
+    {/* Customer Image */}
+    {item.extra.customer_image && (
+      <div className="mt-2">
+        <p className="text-xs text-gray-500 mb-1">Customer Image</p>
+
+        <div className="relative w-20 h-20 rounded-lg overflow-hidden border bg-gray-50">
+          <Image
+            src={`/api/image-proxy?url=${encodeURIComponent(
+              item.extra.customer_image
+            )}`}
+            alt="Customer Image"
+            fill
+            className="object-cover"
+          />
+        </div>
+      </div>
+    )}
+  </div>
+)}
 
                   <p className="font-semibold text-gray-900">₹{item.product.price.toFixed(2)}</p>
                 </div>
 
-                <div className="flex flex-col items-end justify-between">
+              <div className="flex flex-row sm:flex-col items-center sm:items-end justify-between w-full sm:w-auto mt-3 sm:mt-0">
                   <div className="flex items-center gap-3 text-sm text-gray-600">
                     <span className="font-semibold">Qty</span>
                     <span className="w-6 text-center font-semibold text-gray-900">{item.quantity}</span>
@@ -213,7 +223,7 @@ export default function CartPage() {
 
                   <button
                     onClick={() => handleDelete(item.cartId)}
-                    className="p-1 hover:bg-red-50 rounded transition text-red-600 disabled:opacity-50"
+                  className="p-2 sm:p-1 hover:bg-red-50 rounded-full transition text-red-600"
                     disabled={deletingId === item.cartId}
                     aria-label={`Delete ${item.product.name} from cart`}
                   >
