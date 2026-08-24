@@ -53,7 +53,7 @@ export default function Footer() {
                 </Link>
               </li>
               <li>
-                <Link href="/filaments" className="text-gray-400 hover:text-amber-600 transition">
+                <Link href="/filament" className="text-gray-400 hover:text-amber-600 transition">
                   Filaments
                 </Link>
               </li>

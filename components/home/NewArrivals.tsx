@@ -13,6 +13,8 @@ export default function NewArrivals() {
   useEffect(() => {
     let isActive = true;
 
+    
+
     const loadLatestProducts = async () => {
       try {
         setLoading(true);

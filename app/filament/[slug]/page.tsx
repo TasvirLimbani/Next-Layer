@@ -289,7 +289,7 @@ export default function FilamentDetailPage() {
     };
 
     return (
-        <div className="max-w-7xl mx-auto px-4 py-12">
+        <div className="max-w-7xl mx-auto px-4 py-12 ">
             <div className="text-sm text-gray-600 mb-8">
                 <Link href="/shop" className="hover:text-amber-700">
                     Shop

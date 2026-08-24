@@ -5,19 +5,46 @@ import { NextResponse } from "next/server";
 // ==========================
 export async function GET() {
   try {
-    const response = await fetch(
-      "http://nextlayer.soon.it/api/Products/trending.php",
+  const response = await fetch(
+  "http://nextlayer.soon.it/api/Products/trending.php",
       {
         method: "GET",
         cache: "no-store",
       }
     );
 
-    const data = await response.json();
+const data = await response.json();
 
-    return NextResponse.json(data, {
-      status: response.status,
-    });
+const fixUrls = (obj: any): any => {
+  if (typeof obj === "string") {
+    return obj
+      .replace("http://localhost", "https://nextlayer.soon.it")
+      .replace("https://localhost", "https://nextlayer.soon.it");
+  }
+
+  if (Array.isArray(obj)) {
+    return obj.map(fixUrls);
+  }
+
+  if (obj && typeof obj === "object") {
+    return Object.fromEntries(
+      Object.entries(obj).map(([key, value]) => [
+        key,
+        fixUrls(value),
+      ])
+    );
+  }
+
+  return obj;
+};
+
+const fixedData = fixUrls(data);
+
+return NextResponse.json(fixedData, {
+  status: response.status,
+});
+
+
   } catch (error: any) {
     return NextResponse.json(
       {

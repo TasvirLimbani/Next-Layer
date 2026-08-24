@@ -50,7 +50,25 @@ export default function Portfolio() {
     // =========================
     const reels = [
         {
-            link: 'https://www.instagram.com/reel/DaIAxXPuw-R/',
+            link: 'https://www.instagram.com/reel/DbvdznPI1a-/',
+        },
+        {
+            link: 'https://www.instagram.com/reel/DbvdrGsoJe6/',
+        },
+        {
+            link: 'https://www.instagram.com/reel/DbsqlWmz1zH/',
+        },
+        {
+            link: 'https://www.instagram.com/reel/DbVmQAphJJn/',
+        },
+        {
+            link: 'https://www.instagram.com/reel/DbS3__Yzn8H/',
+        },
+        {
+            link: 'https://www.instagram.com/reel/Dasc_ZnRrmU/',
+        },
+        {
+            link: 'https://www.instagram.com/reel/DaSagTqT9Y_/',
         },
         {
             link: 'https://www.instagram.com/reel/DaH_l8QucrY/',
@@ -58,12 +76,6 @@ export default function Portfolio() {
         {
             link: 'https://www.instagram.com/reel/DZ17iG5zBCc/',
         },
-        {
-            link: 'https://www.instagram.com/reel/DZ17iG5zBCc/',
-        },
-        {
-            link: 'https://www.instagram.com/reel/DaH_l8QucrY/',
-        }
     ]
 
     return (
@@ -92,12 +104,12 @@ export default function Portfolio() {
                         repeat: Infinity,
                         ease: 'linear',
                     }}
-                    className="flex gap-6 w-max"
+                    className="flex gap-6 w-max bg-white "
                 >
                     {[...reviews, ...reviews].map((review, index) => (
                         <div
                             key={index}
-                            className="w-[320px] sm:w-[420px] md:w-[500px] min-h-[240px] rounded-3xl bg-gradient-to-br from-purple-600 to-pink-500 p-8 text-white shrink-0 shadow-2xl"
+                            className="w-[320px] sm:w-[420px] md:w-[500px] min-h-[240px] rounded-3xl bg-gradient-to-br from-purple-600 to-pink-500 p-8 text-white shrink-0 "
                         >
                             <div className="flex flex-col h-full justify-between">
                                 <div>
@@ -131,7 +143,7 @@ export default function Portfolio() {
             {/* ===================================== */}
             {/* INSTAGRAM REELS ROW */}
             {/* ===================================== */}
-            <div className="relative overflow-hidden">
+            {/* <div className="relative overflow-hidden">
                 <motion.div
                     animate={{ x: ['-50%', '0%'] }}
                     transition={{
@@ -146,13 +158,6 @@ export default function Portfolio() {
                             key={index}
                             className="relative w-[300px] sm:w-[340px] h-[480px] rounded-[35px] overflow-hidden bg-black shrink-0 shadow-2xl"
                         >
-                            {/* <iframe
-                                src={`${reel.link}embed/captioned`}
-                                className="absolute top-0 left-0 w-full h-[720px] border-0 scale-[1.02]"
-                                scrolling="no"
-                                allowTransparency={true}
-                                allow="autoplay; clipboard-write; encrypted-media; picture-in-picture; web-share"
-                            /> */}
 
                             <iframe
                                 src={`${reel.link}embed/captioned`}
@@ -162,12 +167,11 @@ export default function Portfolio() {
                                 allow="autoplay; clipboard-write; encrypted-media; picture-in-picture; web-share"
                             />
 
-                            {/* Glass Overlay */}
                             <div className="absolute inset-0 pointer-events-none rounded-[35px] ring-1 ring-white/10" />
                         </div>
                     ))}
                 </motion.div>
-            </div>
+            </div> */}
         </section>
     )
 }
