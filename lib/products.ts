@@ -78,19 +78,102 @@ export interface ProductSearchApiResponse {
   message?: string;
 }
 
-const DEFAULT_IMAGE = 'http://placehold.co/800x800?text=Product';
+const DEFAULT_IMAGE = 'https://placehold.co/800x800?text=Product';
+const BASE_IMAGE_HOST = 'https://nextlayer.soon.it';
+
+function normalizeImageUrl(input: string): string {
+  let value = input.trim();
+
+  if (!value) {
+    return '';
+  }
+
+  value = value
+    .replace(/^['\"]+|['\"]+$/g, '')
+    .replace(/\\/g, '')
+    .trim();
+
+  value = value
+    .replace(/^https?:\/\/localhost(?::\d+)?/i, BASE_IMAGE_HOST)
+    .replace(/^http:\/\/nextlayer\.soon\.it/i, BASE_IMAGE_HOST);
+
+  if (value.startsWith('//')) {
+    return `https:${value}`;
+  }
+
+  if (value.startsWith('/')) {
+    return `${BASE_IMAGE_HOST}${value}`;
+  }
+
+  if (/^https?:\/\//i.test(value) || value.startsWith('data:')) {
+    return value;
+  }
+
+  const cleanedPath = value.replace(/^images\//i, '').replace(/^\/+/, '');
+  return `${BASE_IMAGE_HOST}/images/${cleanedPath}`;
+}
+
+function parseImageField(value: unknown): string[] {
+  if (!value) {
+    return [];
+  }
+
+  if (Array.isArray(value)) {
+    return value.flatMap((item) => parseImageField(item)).filter(Boolean);
+  }
+
+  if (typeof value === 'object') {
+    const obj = value as { image?: unknown; url?: unknown; image_url?: unknown };
+    return parseImageField(obj.image ?? obj.url ?? obj.image_url ?? '');
+  }
+
+  if (typeof value !== 'string') {
+    return [];
+  }
+
+  const trimmed = value.trim();
+  if (!trimmed) {
+    return [];
+  }
+
+  if (trimmed.startsWith('[') || trimmed.startsWith('{')) {
+    try {
+      const parsed = JSON.parse(trimmed);
+      return parseImageField(parsed);
+    } catch {
+      // Keep string fallback when backend returns invalid JSON-like strings.
+    }
+  }
+
+  if (trimmed.includes(',') && !trimmed.startsWith('http')) {
+    return trimmed
+      .split(',')
+      .map((part) => normalizeImageUrl(part))
+      .filter(Boolean);
+  }
+
+  const normalized = normalizeImageUrl(trimmed);
+  return normalized ? [normalized] : [];
+}
+
+function pickFirstImageList(candidates: unknown[]): string[] {
+  for (const candidate of candidates) {
+    const parsed = parseImageField(candidate);
+    if (parsed.length > 0) {
+      return parsed;
+    }
+  }
+
+  return [];
+}
 
 export function mapApiProductToProduct(apiProduct: ApiProduct): Product {
- const imageList =
-  apiProduct.variants?.[0]?.image_urls?.length
-    ? apiProduct.variants[0].image_urls
-    : apiProduct.variants?.[0]?.images?.length
-    ? apiProduct.variants[0].images
-    : apiProduct.image_urls?.length
-    ? apiProduct.image_urls
-    : apiProduct.images?.length
-    ? apiProduct.images
-    : [DEFAULT_IMAGE];
+ const imageList = pickFirstImageList([
+  apiProduct.variants?.[0]?.image_urls,
+  apiProduct.variants?.[0]?.images,
+  apiProduct.image_urls,
+  apiProduct.images,
+]);
 
   // Parse color - handle both JSON array string and plain string
 const color =
@@ -105,7 +188,7 @@ const color =
   price: Number(apiProduct.price) || 0,
 
   image: imageList[0] || DEFAULT_IMAGE,
-  images: imageList,
+  images: imageList.length ? imageList : [DEFAULT_IMAGE],
 
   description: apiProduct.description || "",
 
@@ -128,11 +211,8 @@ const color =
   variants:
     apiProduct.variants?.map((variant) => ({
       color: variant.color,
-      images:
-        variant.image_urls?.length
-          ? variant.image_urls
-          : variant.images ?? [],
-      image_urls: variant.image_urls ?? variant.images ?? [],
+      images: pickFirstImageList([variant.image_urls, variant.images]),
+      image_urls: pickFirstImageList([variant.image_urls, variant.images]),
     })) ?? [],
 };
 }

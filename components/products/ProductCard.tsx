@@ -24,13 +24,13 @@ export default function ProductCard({
   disableHoverEffects = false,
 }: ProductCardProps) {
   const { addToCart, addToWishlist, removeFromWishlist, isInWishlist } = useAppContext();
-const isWishlisted = isInWishlist(product.id);
+  const isWishlisted = isInWishlist(product.id);
   const [isUpdatingWishlist, setIsUpdatingWishlist] = useState(false);
   const discount = product.originalPrice
     ? Math.round(((product.originalPrice - product.price) / product.originalPrice) * 100)
     : 0;
 
-const router = useRouter();
+  const router = useRouter();
 
   const getUserId = () => {
     try {
@@ -47,35 +47,35 @@ const router = useRouter();
     }
   };
 
-const toggleWishlistOnServer = async (nextWishlisted: boolean) => {
-  const userId = getUserId();
+  const toggleWishlistOnServer = async (nextWishlisted: boolean) => {
+    const userId = getUserId();
 
-  console.log("User ID:", userId);
-  console.log("Product ID:", product.id);
-  console.log("Product:", product);
+    console.log("User ID:", userId);
+    console.log("Product ID:", product.id);
+    console.log("Product:", product);
 
-  if (!userId) {
-    throw new Error("User not logged in");
-  }
+    if (!userId) {
+      throw new Error("User not logged in");
+    }
 
-  const response = await fetch("/api/wishlist", {
-    method: nextWishlisted ? "POST" : "DELETE",
-    headers: {
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify({
-      user_id: Number(userId),
-      product_id: Number(product.id),
-    }),
-  });
+    const response = await fetch("/api/wishlist", {
+      method: nextWishlisted ? "POST" : "DELETE",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        user_id: Number(userId),
+        product_id: Number(product.id),
+      }),
+    });
 
-  const data = await response.json();
-  console.log("Wishlist Response:", data);
+    const data = await response.json();
+    console.log("Wishlist Response:", data);
 
-  if (!response.ok || (!data?.status && !data?.success)) {
-    throw new Error(data?.message || "Failed to update wishlist");
-  }
-};
+    if (!response.ok || (!data?.status && !data?.success)) {
+      throw new Error(data?.message || "Failed to update wishlist");
+    }
+  };
 
   const handleAddToCart = (e: React.MouseEvent) => {
     e.preventDefault();
@@ -86,32 +86,32 @@ const toggleWishlistOnServer = async (nextWishlisted: boolean) => {
     });
   };
 
-const handleWishlist = async (e: React.MouseEvent) => {
-  e.preventDefault();
-  e.stopPropagation();
+  const handleWishlist = async (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
 
-  if (isUpdatingWishlist) return;
+    if (isUpdatingWishlist) return;
 
-  const nextWishlisted = !isWishlisted;
+    const nextWishlisted = !isWishlisted;
 
-  setIsUpdatingWishlist(true);
+    setIsUpdatingWishlist(true);
 
-  try {
-    await toggleWishlistOnServer(nextWishlisted);
+    try {
+      await toggleWishlistOnServer(nextWishlisted);
 
-    if (nextWishlisted) {
-      addToWishlist(product.id);
-    } else {
-      removeFromWishlist(product.id);
+      if (nextWishlisted) {
+        addToWishlist(product.id);
+      } else {
+        removeFromWishlist(product.id);
+      }
+
+      onWishlistChange?.();
+    } catch (error) {
+      console.error("Wishlist Error:", error);
+    } finally {
+      setIsUpdatingWishlist(false);
     }
-
-    onWishlistChange?.();
-  } catch (error) {
-    console.error("Wishlist Error:", error);
-  } finally {
-    setIsUpdatingWishlist(false);
-  }
-};
+  };
   const handleRemoveWishlist = (e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
@@ -158,7 +158,7 @@ const handleWishlist = async (e: React.MouseEvent) => {
         {/* Image Container */}
         <div className="relative bg-gray-100 rounded-lg overflow-hidden mb-4 aspect-square">
           <Image
-          src={product.image}
+            src={`/api/image-proxy?url=${encodeURIComponent(product.image)}`}
             alt={product.name}
             fill
             unoptimized
@@ -202,13 +202,13 @@ const handleWishlist = async (e: React.MouseEvent) => {
             </button> */}
 
             <button
-  onClick={() => router.push(`/product/${product.id}`)}
-  className="flex-1 flex items-center justify-center gap-2 bg-gray-900 text-white py-2 rounded hover:opacity-80 transition"
-  disabled={!product.inStock}
->
-  <ShoppingCart size={16} />
-  <span className="text-sm">ADD</span>
-</button>
+              onClick={() => router.push(`/product/${product.id}`)}
+              className="flex-1 flex items-center justify-center gap-2 bg-gray-900 text-white py-2 rounded hover:opacity-80 transition"
+              disabled={!product.inStock}
+            >
+              <ShoppingCart size={16} />
+              <span className="text-sm">ADD</span>
+            </button>
             {showDeleteWishlistButton ? (
               <button
                 onClick={handleRemoveWishlist}
