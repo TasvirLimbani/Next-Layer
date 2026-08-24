@@ -43,7 +43,7 @@ export const ASSURANCES = [
   {
     icon: 'Truck',
     title: 'Fast & Free Shipping',
-    description: 'Free shipping on orders over ₹100',
+    description: 'Free shipping on orders over ₹999',
   },
   {
     icon: 'Clock',

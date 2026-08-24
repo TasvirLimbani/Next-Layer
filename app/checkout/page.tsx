@@ -424,7 +424,7 @@ export default function CheckoutPage() {
         {/* Checkout Form */}
         <div className="lg:col-span-2">
           {/* Step Indicator */}
-          <div className="flex flex-wrap gap-3 sm:gap-4 mb-8">
+          {/* <div className="flex flex-wrap gap-3 sm:gap-4 mb-8">
             {(['shipping', 'payment', 'review'] as const).map((s, idx) => (
               <div key={s} className="flex items-center gap-2">
                 <div
@@ -447,7 +447,7 @@ export default function CheckoutPage() {
                 <span className="font-semibold capitalize text-sm sm:text-base">{s}</span>
               </div>
             ))}
-          </div>
+          </div> */}
 
           {/* Shipping Form */}
           {step === 'shipping' && (
@@ -530,7 +530,7 @@ export default function CheckoutPage() {
                 className="w-full py-3 text-white font-semibold rounded hover:opacity-90 transition mt-6"
                 style={{ backgroundColor: '#C4A57B' }}
               >
-                CONTINUE TO PAYMENT
+                CONFIRM ORDER
               </button>
             </div>
           )}

@@ -48,40 +48,12 @@ export default function Portfolio() {
     // =========================
     // INSTAGRAM REELS
     // =========================
-    const reels = [
-        {
-            link: 'https://www.instagram.com/reel/DbvdznPI1a-/',
-        },
-        {
-            link: 'https://www.instagram.com/reel/DbvdrGsoJe6/',
-        },
-        {
-            link: 'https://www.instagram.com/reel/DbsqlWmz1zH/',
-        },
-        {
-            link: 'https://www.instagram.com/reel/DbVmQAphJJn/',
-        },
-        {
-            link: 'https://www.instagram.com/reel/DbS3__Yzn8H/',
-        },
-        {
-            link: 'https://www.instagram.com/reel/Dasc_ZnRrmU/',
-        },
-        {
-            link: 'https://www.instagram.com/reel/DaSagTqT9Y_/',
-        },
-        {
-            link: 'https://www.instagram.com/reel/DaH_l8QucrY/',
-        },
-        {
-            link: 'https://www.instagram.com/reel/DZ17iG5zBCc/',
-        },
-    ]
+  
 
     return (
         <section
             id="portfolio"
-            className="py-20 bg-white overflow-hidden"
+            className="py-10 bg-white overflow-hidden"
         >
             {/* HEADING */}
             <div className="text-center mb-14 px-4">
@@ -96,53 +68,88 @@ export default function Portfolio() {
             {/* ===================================== */}
             {/* REVIEWS ROW */}
             {/* ===================================== */}
-            <div className="relative overflow-hidden mb-8">
-                <motion.div
-                    animate={{ x: ['0%', '-50%'] }}
-                    transition={{
-                        duration: 25,
-                        repeat: Infinity,
-                        ease: 'linear',
-                    }}
-                    className="flex gap-4 sm:gap-6 w-max bg-white px-4 sm:px-0"
-                >
-                    {[...reviews, ...reviews].map((review, index) => (
-                        <div
-                            key={index}
-                            className="w-[calc(100vw-2rem)] sm:w-105 md:w-125 min-h-60 rounded-3xl bg-linear-to-br from-purple-600 to-pink-500 p-6 sm:p-8 text-white shrink-0"
-                        >
-                            <div className="flex flex-col h-full justify-between">
-                                <div>
-                                    <p className="text-yellow-300 text-xl mb-4">
-                                        {review.rating}
-                                    </p>
+           <div className="relative mb-8 w-full overflow-hidden">
+  <motion.div
+    className="flex w-max gap-3 sm:gap-5 will-change-transform"
+    animate={{
+      x: ['0px', '-50%'],
+    }}
+    transition={{
+      duration: 30,
+      repeat: Infinity,
+      repeatType: 'loop',
+      ease: 'linear',
+    }}
+  >
+    {[...reviews, ...reviews].map((review, index) => (
+      <div
+        key={`${review.name}-${index}`}
+        className="
+          shrink-0
+          w-[78vw]
+          max-w-[290px]
+          sm:w-[380px]
+          sm:max-w-none
+          md:w-[460px]
 
-                                    <p className="text-lg sm:text-xl leading-relaxed text-white/90">
-                                        “{review.review}”
-                                    </p>
-                                </div>
+          min-h-[185px]
+          sm:min-h-[220px]
 
-                                <div className="mt-8">
-                                    <h3 className="text-2xl font-bold">
-                                        {review.name}
-                                    </h3>
+          rounded-2xl
+          sm:rounded-3xl
 
-                                    <p className="text-white/80 mt-1">
-                                        {review.role}
-                                    </p>
-                                </div>
-                            </div>
-                        </div>
-                    ))}
-                </motion.div>
+          bg-gradient-to-br
+          from-purple-600
+          to-pink-500
+
+          px-4
+          py-4
+          sm:p-7
+
+          text-white
+
+          shadow-lg
+        "
+      >
+        <div className="flex h-full flex-col justify-between">
+
+          {/* Rating + Review */}
+          <div>
+            <div className="mb-2 sm:mb-4 text-sm sm:text-xl tracking-wide">
+              {review.rating}
             </div>
 
-            {/* ===================================== */}
-            {/* INSTAGRAM REELS ROW */}
-            {/* ===================================== */}
-            {/* ===================================== */}
-            {/* INSTAGRAM REELS ROW */}
-            {/* ===================================== */}
+            <p
+              className="
+                text-sm
+                sm:text-lg
+                leading-5
+                sm:leading-7
+                text-white/90
+                line-clamp-4
+              "
+            >
+              “{review.review}”
+            </p>
+          </div>
+
+          {/* Customer */}
+          <div className="mt-5 sm:mt-7">
+            <h3 className="text-base sm:text-xl font-bold">
+              {review.name}
+            </h3>
+
+            <p className="mt-0.5 text-xs sm:text-sm text-white/75">
+              {review.role}
+            </p>
+          </div>
+
+        </div>
+      </div>
+    ))}
+  </motion.div>
+</div>
+        
             {/* <div className="relative overflow-hidden">
                 <motion.div
                     animate={{ x: ['-50%', '0%'] }}

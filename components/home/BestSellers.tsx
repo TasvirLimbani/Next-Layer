@@ -17,13 +17,16 @@ export default function BestSellers() {
     const loadBestSellers = async () => {
       try {
         setLoading(true);
+
         const bestSellers = await fetchBestSellerProducts();
 
         if (isActive) {
           setProducts(bestSellers);
           setError('');
         }
-      } catch {
+      } catch (error) {
+        console.error('Failed to load best sellers:', error);
+
         if (isActive) {
           setError('Failed to load best sellers.');
         }
@@ -42,42 +45,163 @@ export default function BestSellers() {
   }, []);
 
   return (
-    <section className="py-16 md:py-24">
-      <div className="max-w-7xl mx-auto px-4">
-        {/* Header */}
-        <div className="text-center mb-12">
-          <h2 className="text-3xl md:text-4xl font-bold mb-4">Best Sellers</h2>
-          <p className="text-gray-600 text-lg mb-8">
+    <section className="w-full py-8 sm:py-12 md:py-16 lg:py-20">
+      <div className="mx-auto w-full max-w-7xl px-3 sm:px-4 md:px-6 lg:px-8">
+
+        {/* =========================
+            SECTION HEADER
+        ========================== */}
+        <div className="mb-7 text-center sm:mb-9 md:mb-12">
+          <h2
+            className="
+              text-2xl
+              font-semibold
+              tracking-tight
+              text-gray-900
+              sm:text-3xl
+              md:text-4xl
+            "
+          >
+            Best Sellers
+          </h2>
+
+          <p
+            className="
+              mx-auto
+              mt-2
+              max-w-2xl
+              px-2
+              text-sm
+              leading-5
+              text-gray-600
+              sm:mt-3
+              sm:text-base
+              md:text-lg
+              md:leading-7
+            "
+          >
             Discover our most loved 3D printed products trusted by thousands
           </p>
-          <div className="w-16 h-1 mx-auto rounded-full" style={{ backgroundColor: '#C4A57B' }} />
+
+          {/* Decorative line */}
+          <div
+            className="
+              mx-auto
+              mt-4
+              h-1
+              w-12
+              rounded-full
+              sm:mt-5
+              sm:w-16
+            "
+            style={{ backgroundColor: '#C4A57B' }}
+          />
         </div>
 
-        {/* Products Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-12">
+        {/* =========================
+            PRODUCTS GRID
+            Mobile  = 2 columns
+            Tablet  = 2 columns
+            Desktop = 4 columns
+        ========================== */}
+        <div
+          className="
+            grid
+            grid-cols-2
+            gap-x-3
+            gap-y-7
+            sm:gap-x-4
+            sm:gap-y-9
+            md:grid-cols-2
+            md:gap-6
+            lg:grid-cols-4
+            lg:gap-6
+          "
+        >
+          {/* Loading */}
           {loading &&
             Array.from({ length: 4 }).map((_, index) => (
-              <div key={index} className="h-80 rounded-lg bg-gray-100 animate-pulse" />
+              <div
+                key={index}
+                className="
+                  w-full
+                  overflow-hidden
+                  rounded-xl
+                  bg-white
+                "
+              >
+                {/* Image skeleton */}
+                <div
+                  className="
+                    aspect-square
+                    w-full
+                    animate-pulse
+                    rounded-xl
+                    bg-gray-100
+                  "
+                />
+
+                {/* Content skeleton */}
+                <div className="pt-3 sm:pt-4">
+                  <div className="h-3 w-11/12 animate-pulse rounded bg-gray-100" />
+                  <div className="mt-2 h-3 w-8/12 animate-pulse rounded bg-gray-100" />
+                  <div className="mt-3 h-4 w-6/12 animate-pulse rounded bg-gray-100" />
+                </div>
+              </div>
             ))}
 
+          {/* Error */}
           {!loading && error && (
-            <p className="col-span-full text-center text-sm text-gray-500">{error}</p>
+            <div className="col-span-2 py-10 text-center lg:col-span-4">
+              <p className="text-sm text-gray-500">{error}</p>
+            </div>
           )}
 
-          {!loading && !error && products.map((product) => <ProductCard key={product.id} product={product} />)}
+          {/* Products */}
+          {!loading &&
+            !error &&
+            products.map((product) => (
+              <div
+                key={product.id}
+                className="
+                  min-w-0
+                  w-full
+                "
+              >
+                <ProductCard product={product} />
+              </div>
+            ))}
         </div>
 
-        {/* CTA Button */}
-        <div className="text-center">
-          <Link href="/shop">
-            <button
-              className="px-8 py-3 font-semibold rounded transition hover:opacity-90"
-              style={{ backgroundColor: '#C4A57B', color: 'white' }}
+        {/* =========================
+            VIEW ALL BUTTON
+        ========================== */}
+        {!loading && !error && products.length > 0 && (
+          <div className="mt-9 text-center sm:mt-12">
+            <Link
+              href="/shop"
+              className="
+                inline-flex
+                items-center
+                justify-center
+                rounded-md
+                px-6
+                py-3
+                text-sm
+                font-semibold
+                text-white
+                transition
+                duration-200
+                hover:opacity-90
+                sm:px-8
+                sm:text-base
+              "
+              style={{ backgroundColor: '#C4A57B' }}
             >
               VIEW ALL PRODUCTS
-            </button>
-          </Link>
-        </div>
+            </Link>
+          </div>
+        )}
       </div>
     </section>
   );

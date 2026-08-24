@@ -11,7 +11,7 @@ const ASSURANCES = [
   {
     icon: Truck,
     title: 'Fast & Free Shipping',
-    description: 'Free shipping on orders over ₹100',
+    description: 'Free shipping on orders over ₹999',
   },
   {
     icon: Clock,
@@ -22,7 +22,7 @@ const ASSURANCES = [
 
 export default function AssuranceSection() {
   return (
-    <section className="py-16 md:py-24">
+    <section className="py-16 md:py-14">
       <div className="max-w-7xl mx-auto px-4">
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
           {ASSURANCES.map((assurance, index) => {

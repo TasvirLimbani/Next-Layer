@@ -1,7 +1,13 @@
 'use client';
 
 import Link from 'next/link';
-import { Mail, Phone, MapPin, Facebook, Twitter, Instagram } from 'lucide-react';
+import {
+  Mail,
+  Phone,
+  MapPin,
+  Facebook,
+  Instagram,
+} from 'lucide-react';
 import { useState } from 'react';
 
 export default function Footer() {
@@ -15,131 +21,241 @@ export default function Footer() {
 
   return (
     <footer className="bg-gray-900 text-gray-100">
-      <div className="max-w-7xl mx-auto px-4 py-12">
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-8 mb-8">
-          {/* Company Info */}
+      <div className="mx-auto w-full max-w-7xl px-5 sm:px-6 lg:px-8">
+
+        {/* ================= MAIN FOOTER ================= */}
+        <div
+          className="
+            grid
+            grid-cols-1
+            gap-10
+            py-5
+            sm:grid-cols-2
+            lg:grid-cols-3
+            lg:gap-12
+            lg:py-10
+          "
+        >
+          {/* ================= COMPANY ================= */}
           <div>
-            <h3 className="text-lg font-bold mb-4">
+            <h3 className="mb-4 text-lg font-bold tracking-wide">
               <span style={{ color: '#C4A57B' }}>NEXT</span>LAYERS
             </h3>
-            <p className="text-sm text-gray-400 mb-4">
+
+            <p className="mb-5 max-w-sm text-sm leading-6 text-gray-400">
               Premium 3D printed products crafted with precision and care.
             </p>
-            <div className="flex gap-4">
-              <a href="#" className="hover:text-amber-600 transition">
-                <Facebook size={18} />
+
+            <div className="flex items-center gap-4">
+              <a
+                href="#"
+                aria-label="Facebook"
+                className="
+                  flex h-9 w-9 items-center justify-center
+                  rounded-full border border-gray-700
+                  text-gray-400
+                  transition
+                  hover:border-[#C4A57B]
+                  hover:text-[#C4A57B]
+                "
+              >
+                <Facebook size={17} />
               </a>
-              {/* <a href="#" className="hover:text-amber-600 transition">
-                <Twitter size={18} />
-              </a> */}
-              <a href="#" className="hover:text-amber-600 transition">
-                <Instagram size={18} />
+
+              <a
+                href="#"
+                aria-label="Instagram"
+                className="
+                  flex h-9 w-9 items-center justify-center
+                  rounded-full border border-gray-700
+                  text-gray-400
+                  transition
+                  hover:border-[#C4A57B]
+                  hover:text-[#C4A57B]
+                "
+              >
+                <Instagram size={17} />
               </a>
             </div>
           </div>
 
-          {/* Quick Links */}
+          {/* ================= SHOP ================= */}
           <div>
-            <h4 className="font-semibold mb-4">SHOP</h4>
-            <ul className="space-y-2 text-sm">
+            <h4 className="mb-4 text-sm font-semibold tracking-wider">
+              SHOP
+            </h4>
+
+            <ul className="space-y-3 text-sm">
               <li>
-                <Link href="/" className="text-gray-400 hover:text-amber-600 transition">
+                <Link
+                  href="/"
+                  className="text-gray-400 transition hover:text-[#C4A57B]"
+                >
                   Home
                 </Link>
               </li>
+
               <li>
-                <Link href="/shop" className="text-gray-400 hover:text-amber-600 transition">
+                <Link
+                  href="/shop"
+                  className="text-gray-400 transition hover:text-[#C4A57B]"
+                >
                   All Products
                 </Link>
               </li>
-              <li>
-                <Link href="/filament" className="text-gray-400 hover:text-amber-600 transition">
-                  Filaments
-                </Link>
-              </li>
+
 
             </ul>
           </div>
 
-          {/* Information */}
+          {/* ================= INFORMATION ================= */}
           <div>
-            <h4 className="font-semibold mb-4">INFORMATION</h4>
-            <ul className="space-y-2 text-sm">
+            <h4 className="mb-4 text-sm font-semibold tracking-wider">
+              INFORMATION
+            </h4>
+
+            <ul className="space-y-3 text-sm">
               <li>
-                <Link href="/about-us" className="text-gray-400 hover:text-amber-600 transition">
+                <Link
+                  href="/about-us"
+                  className="text-gray-400 transition hover:text-[#C4A57B]"
+                >
                   About Us
                 </Link>
               </li>
+
               <li>
-                <Link href="/privacy-policy" className="text-gray-400 hover:text-amber-600 transition">
+                <Link
+                  href="/privacy-policy"
+                  className="text-gray-400 transition hover:text-[#C4A57B]"
+                >
                   Privacy Policy
                 </Link>
               </li>
+
               <li>
-                <Link href="/terms-and-conditions" className="text-gray-400 hover:text-amber-600 transition">
+                <Link
+                  href="/terms-and-conditions"
+                  className="text-gray-400 transition hover:text-[#C4A57B]"
+                >
                   Terms & Conditions
                 </Link>
               </li>
+
               <li>
-                <Link href="/contact" className="text-gray-400 hover:text-amber-600 transition">
+                <Link
+                  href="/contact"
+                  className="text-gray-400 transition hover:text-[#C4A57B]"
+                >
                   Contact Us
                 </Link>
               </li>
             </ul>
           </div>
 
-          {/* Newsletter */}
-          <div>
-            <h4 className="font-semibold mb-4">NEWSLETTER</h4>
-            <p className="text-sm text-gray-400 mb-4">Subscribe for exclusive offers and updates.</p>
-            <form onSubmit={handleNewsletterSubmit} className="flex flex-col gap-2 sm:flex-row sm:gap-0">
-              <input
-                type="email"
-                placeholder="Your email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                className="w-full flex-1 px-3 py-2 bg-gray-800 text-white text-sm rounded border border-gray-700 focus:outline-none sm:rounded-r-none"
-                required
-              />
-              <button
-                type="submit"
-                className="px-4 py-2 text-white text-sm font-medium rounded transition sm:rounded-l-none"
-                style={{ backgroundColor: '#C4A57B' }}
+
+
+        </div>
+
+        {/* ================= CONTACT INFORMATION ================= */}
+        <div
+          className="
+            grid
+            grid-cols-1
+            gap-7
+            border-t border-gray-800
+            py-4
+            sm:grid-cols-2
+            lg:grid-cols-3
+            lg:gap-10
+          "
+        >
+          {/* Phone */}
+          <div className="flex items-start gap-3">
+            <Phone
+              size={19}
+              className="mt-0.5 shrink-0"
+              style={{ color: '#C4A57B' }}
+            />
+
+            <div className="min-w-0">
+              <p className="mb-1 text-sm font-semibold">
+                Phone
+              </p>
+
+              <a
+                href="tel:+919723553038"
+                className="
+                  text-sm text-gray-400
+                  transition hover:text-[#C4A57B]
+                "
               >
-                JOIN
-              </button>
-            </form>
+                +91 97235 53038
+              </a>
+            </div>
+          </div>
+
+          {/* Email */}
+          <div className="flex items-start gap-3">
+            <Mail
+              size={19}
+              className="mt-0.5 shrink-0"
+              style={{ color: '#C4A57B' }}
+            />
+
+            <div className="min-w-0">
+              <p className="mb-1 text-sm font-semibold">
+                Email
+              </p>
+
+              <a
+                href="mailto:nextlayecreations.info@gmail.com"
+                className="
+                  block
+                  break-all
+                  text-sm
+                  text-gray-400
+                  transition
+                  hover:text-[#C4A57B]
+                "
+              >
+                nextlayecreations.info@gmail.com
+              </a>
+            </div>
+          </div>
+
+          {/* Address */}
+          <div className="flex items-start gap-3 sm:col-span-2 lg:col-span-1">
+            <MapPin
+              size={19}
+              className="mt-0.5 shrink-0"
+              style={{ color: '#C4A57B' }}
+            />
+
+            <div className="min-w-0">
+              <p className="mb-1 text-sm font-semibold">
+                Address
+              </p>
+
+              <p className="text-sm leading-6 text-gray-400">
+                C2-1215, Pragati IT Park, Mota Varachha,
+                Surat-394101
+              </p>
+            </div>
           </div>
         </div>
 
-        {/* Contact Info */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 py-8 border-t border-gray-800">
-          <div className="flex items-start gap-3">
-            <Phone size={18} style={{ color: '#C4A57B' }} className="mt-1" />
-            <div>
-              <p className="font-semibold text-sm">Phone</p>
-              <p className="text-sm text-gray-400">+91 97235 53038</p>
-            </div>
-          </div>
-          <div className="flex items-start gap-3">
-            <Mail size={18} style={{ color: '#C4A57B' }} className="mt-1" />
-            <div>
-              <p className="font-semibold text-sm">Email</p>
-              <p className="text-sm text-gray-400 break-all">nextlayecreations.info@gmail.com</p>
-            </div>
-          </div>
-          <div className="flex items-start gap-3">
-            <MapPin size={18} style={{ color: '#C4A57B' }} className="mt-1" />
-            <div>
-              <p className="font-semibold text-sm">Address</p>
-              <p className="text-sm text-gray-400">C2-1215, Pragati IT Park, Mota Varachha, Surat-394101</p>
-            </div>
-          </div>
-        </div>
-
-        {/* Copyright */}
-        <div className="border-t border-gray-800 pt-8 text-center text-sm text-gray-400">
-          <p>&copy; 2026 NEXTLAYERS. All rights reserved.</p>
+        {/* ================= COPYRIGHT ================= */}
+        <div
+          className="
+            border-t border-gray-800
+            py-6
+            text-center
+          "
+        >
+          <p className="text-xs leading-5 text-gray-500 sm:text-sm">
+            &copy; 2026 NEXTLAYERS. All rights reserved.
+          </p>
         </div>
       </div>
     </footer>

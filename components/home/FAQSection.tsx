@@ -12,7 +12,7 @@ export default function FAQSection() {
   };
 
   return (
-    <section className="py-16 md:py-24">
+    <section className="py-1 md:py-10">
       <div className="max-w-3xl mx-auto px-4">
         {/* Header */}
         <div className="text-center mb-12">
