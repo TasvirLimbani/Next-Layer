@@ -78,7 +78,7 @@ export interface ProductSearchApiResponse {
   message?: string;
 }
 
-const DEFAULT_IMAGE = 'https://placehold.co/800x800?text=Product';
+const DEFAULT_IMAGE = 'http://placehold.co/800x800?text=Product';
 
 export function mapApiProductToProduct(apiProduct: ApiProduct): Product {
  const imageList =

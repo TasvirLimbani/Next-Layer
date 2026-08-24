@@ -18,8 +18,8 @@ const data = await response.json();
 const fixUrls = (obj: any): any => {
   if (typeof obj === "string") {
     return obj
-      .replace("http://localhost", "https://nextlayer.soon.it")
-      .replace("https://localhost", "https://nextlayer.soon.it");
+      .replace("http://localhost", "http://nextlayer.soon.it")
+      .replace("http://localhost", "http://nextlayer.soon.it");
   }
 
   if (Array.isArray(obj)) {

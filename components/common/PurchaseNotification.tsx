@@ -91,7 +91,7 @@ export default function PurchaseNotifications() {
           <X size={16} />
         </button>
 
-        {/* <div className="flex gap-3 pr-6">
+        <div className="flex gap-3 pr-6">
           <div className="relative w-16 h-16 flex-shrink-0 rounded-lg overflow-hidden bg-gray-100">
             <Image
               src={notification.productImage}
@@ -111,7 +111,7 @@ export default function PurchaseNotifications() {
             </p>
             <p className="text-xs text-gray-500 mt-1">{notification.timeAgo}</p>
           </div>
-        </div> */}
+        </div>
       </div>
     </div>
   );

@@ -334,7 +334,7 @@ if (result.status) {
     const phoneNumber = "919723553038";
     // clearServerCart();  
 
-    const whatsappUrl = `https://wa.me/${phoneNumber}?text=${encodeURIComponent(
+    const whatsappUrl = `http://wa.me/${phoneNumber}?text=${encodeURIComponent(
       message
     )}`;
 

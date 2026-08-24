@@ -16,7 +16,7 @@ export default function InstagramEmbed() {
   useEffect(() => {
     // Load Instagram embed script
     const script = document.createElement("script");
-    script.src = "https://www.instagram.com/embed.js";
+    script.src = "http://www.instagram.com/embed.js";
     script.async = true;
 
     document.body.appendChild(script);
