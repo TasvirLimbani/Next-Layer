@@ -98,7 +98,7 @@ export default function CartPage() {
       <div className="max-w-7xl mx-auto px-4 py-16 md:py-24">
         <div className="space-y-4">
           <div className="h-10 w-48 rounded bg-gray-100 animate-pulse" />
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 lg:gap-10">
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 lg:gap-10">
             <div className="lg:col-span-2 space-y-4">
               {Array.from({ length: 2 }).map((_, index) => (
                 <div key={index} className="h-32 rounded-lg bg-gray-100 animate-pulse" />
@@ -136,7 +136,7 @@ export default function CartPage() {
 
   return (
     <div className="max-w-7xl mx-auto px-4 py-12">
-      <h1 className="text-4xl font-bold mb-8">Shopping Cart</h1>
+      <h1 className="text-3xl sm:text-4xl font-bold mb-8">Shopping Cart</h1>
       {error && <p className="mb-6 text-sm text-amber-700">{error}</p>}
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
@@ -144,10 +144,10 @@ export default function CartPage() {
           <div className="space-y-4">
             {cart.map((item) => (
               <div
-  key={item.cartId}
-  className="border border-gray-200 rounded-xl p-4 flex flex-col sm:flex-row gap-4 sm:items-center hover:shadow-md transition bg-white"
->
-              <div className="relative w-full sm:w-24 h-40 sm:h-24 bg-gray-100 rounded-lg overflow-hidden flex-shrink-0">
+                key={item.cartId}
+                className="border border-gray-200 rounded-xl p-4 flex flex-col sm:flex-row gap-4 sm:items-center hover:shadow-md transition bg-white"
+              >
+                <div className="relative w-full sm:w-24 h-40 sm:h-24 bg-gray-100 rounded-lg overflow-hidden shrink-0">
                   <Image
                     src={`/api/image-proxy?url=${encodeURIComponent(item.product.image)}`}
                     alt={item.product.name}
@@ -156,7 +156,7 @@ export default function CartPage() {
                   />
                 </div>
 
-           <div className="flex-1 min-w-0 space-y-1">
+                <div className="flex-1 min-w-0 space-y-1">
                   <Link href={`/shop/${item.product.id}`}>
                     <h3 className="font-semibold hover:text-amber-700 transition line-clamp-1">
                       {item.product.name}
@@ -164,58 +164,58 @@ export default function CartPage() {
                   </Link>
                   <p className="text-sm text-gray-600 mb-2">{item.product.vendor}</p>
 
-      {item.extra && (
-  <div className="mt-2 space-y-2">
-    <div className="flex flex-wrap gap-2">
-      {item.extra.customization && (
-        <span className="text-xs bg-gray-100 px-2 py-1 rounded-full">
-          Custom: {item.extra.customization}
-        </span>
-      )}
+                  {item.extra && (
+                    <div className="mt-2 space-y-2">
+                      <div className="flex flex-wrap gap-2">
+                        {item.extra.customization && (
+                          <span className="text-xs bg-gray-100 px-2 py-1 rounded-full">
+                            Custom: {item.extra.customization}
+                          </span>
+                        )}
 
-      {item.extra.colour && (
-        <span className="text-xs bg-gray-100 px-2 py-1 rounded-full">
-          Colour: {item.extra.colour}
-        </span>
-      )}
+                        {item.extra.colour && (
+                          <span className="text-xs bg-gray-100 px-2 py-1 rounded-full">
+                            Colour: {item.extra.colour}
+                          </span>
+                        )}
 
-      {item.extra.diameter && (
-        <span className="text-xs bg-gray-100 px-2 py-1 rounded-full">
-          Diameter: {item.extra.diameter}
-        </span>
-      )}
+                        {item.extra.diameter && (
+                          <span className="text-xs bg-gray-100 px-2 py-1 rounded-full">
+                            Diameter: {item.extra.diameter}
+                          </span>
+                        )}
 
-      {item.extra.weight && (
-        <span className="text-xs bg-gray-100 px-2 py-1 rounded-full">
-          Weight: {item.extra.weight}
-        </span>
-      )}
-    </div>
+                        {item.extra.weight && (
+                          <span className="text-xs bg-gray-100 px-2 py-1 rounded-full">
+                            Weight: {item.extra.weight}
+                          </span>
+                        )}
+                      </div>
 
-    {/* Customer Image */}
-    {item.extra.customer_image && (
-      <div className="mt-2">
-        <p className="text-xs text-gray-500 mb-1">Customer Image</p>
+                      {/* Customer Image */}
+                      {item.extra.customer_image && (
+                        <div className="mt-2">
+                          <p className="text-xs text-gray-500 mb-1">Customer Image</p>
 
-        <div className="relative w-20 h-20 rounded-lg overflow-hidden border bg-gray-50">
-          <Image
-            src={`/api/image-proxy?url=${encodeURIComponent(
-              item.extra.customer_image
-            )}`}
-            alt="Customer Image"
-            fill
-            className="object-cover"
-          />
-        </div>
-      </div>
-    )}
-  </div>
-)}
+                          <div className="relative w-20 h-20 rounded-lg overflow-hidden border bg-gray-50">
+                            <Image
+                              src={`/api/image-proxy?url=${encodeURIComponent(
+                                item.extra.customer_image
+                              )}`}
+                              alt="Customer Image"
+                              fill
+                              className="object-cover"
+                            />
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  )}
 
                   <p className="font-semibold text-gray-900">₹{item.product.price.toFixed(2)}</p>
                 </div>
 
-              <div className="flex flex-row sm:flex-col items-center sm:items-end justify-between w-full sm:w-auto mt-3 sm:mt-0">
+                <div className="flex flex-wrap sm:flex-col items-center sm:items-end justify-between w-full sm:w-auto mt-3 sm:mt-0 gap-2 sm:gap-0">
                   <div className="flex items-center gap-3 text-sm text-gray-600">
                     <span className="font-semibold">Qty</span>
                     <span className="w-6 text-center font-semibold text-gray-900">{item.quantity}</span>
@@ -223,7 +223,7 @@ export default function CartPage() {
 
                   <button
                     onClick={() => handleDelete(item.cartId)}
-                  className="p-2 sm:p-1 hover:bg-red-50 rounded-full transition text-red-600"
+                    className="p-2 sm:p-1 hover:bg-red-50 rounded-full transition text-red-600"
                     disabled={deletingId === item.cartId}
                     aria-label={`Delete ${item.product.name} from cart`}
                   >
@@ -244,7 +244,7 @@ export default function CartPage() {
         </div>
 
         <div className="lg:col-span-1">
-          <div className="border border-gray-200 rounded-lg p-6 bg-gray-50 sticky top-24">
+          <div className="border border-gray-200 rounded-lg p-6 bg-gray-50 lg:sticky lg:top-24">
             <h2 className="text-xl font-bold mb-6">Order Summary</h2>
 
             <div className="space-y-4 mb-6 text-sm">

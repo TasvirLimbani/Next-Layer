@@ -29,8 +29,8 @@ export default function ProductDetailPage() {
   const [selectedColor, setSelectedColor] = useState<string>('');
   const [selectedColorIndex, setSelectedColorIndex] = useState<number>(0);
   const [selectedImages, setSelectedImages] = useState<string[]>([]);
-const [notificationMessage, setNotificationMessage] = useState('');
-const [notificationType, setNotificationType] = useState<'success' | 'error'>('success');
+  const [notificationMessage, setNotificationMessage] = useState('');
+  const [notificationType, setNotificationType] = useState<'success' | 'error'>('success');
 
 
 
@@ -150,8 +150,8 @@ const [notificationType, setNotificationType] = useState<'success' | 'error'>('s
 
     return () => clearInterval(interval);
   }, [product]);
-  
-  
+
+
 
   if (isLoading) {
     return (
@@ -303,31 +303,31 @@ const [notificationType, setNotificationType] = useState<'success' | 'error'>('s
 
 
   const handleAddToCart = async () => {
-      // Require custom text
-  if (
-    Number(product.customizable) === 1 &&
-    customName.trim() === ""
-  ) {
-    setNotificationType("error");
-    setNotificationMessage("Please enter custom text.");
-    setShowNotification(true);
+    // Require custom text
+    if (
+      Number(product.customizable) === 1 &&
+      customName.trim() === ""
+    ) {
+      setNotificationType("error");
+      setNotificationMessage("Please enter custom text.");
+      setShowNotification(true);
 
-    setTimeout(() => setShowNotification(false), 3000);
-    return;
-  }
+      setTimeout(() => setShowNotification(false), 3000);
+      return;
+    }
 
-  // Require custom image
-  if (
-    Number(product.image_customizable) === 1 &&
-    !customImage
-  ) {
-    setNotificationType("error");
-    setNotificationMessage("Please upload a custom image.");
-    setShowNotification(true);
+    // Require custom image
+    if (
+      Number(product.image_customizable) === 1 &&
+      !customImage
+    ) {
+      setNotificationType("error");
+      setNotificationMessage("Please upload a custom image.");
+      setShowNotification(true);
 
-    setTimeout(() => setShowNotification(false), 3000);
-    return;
-  }
+      setTimeout(() => setShowNotification(false), 3000);
+      return;
+    }
     try {
       setIsAddingToCart(true);
 
@@ -399,13 +399,13 @@ const [notificationType, setNotificationType] = useState<'success' | 'error'>('s
 
       window.dispatchEvent(new Event('cart-updated'));
 
-  setNotificationType("success");
-setNotificationMessage(
-  `Added to cart! ${customName ? `(${customName})` : ""}`
-);
-setShowNotification(true);
+      setNotificationType("success");
+      setNotificationMessage(
+        `Added to cart! ${customName ? `(${customName})` : ""}`
+      );
+      setShowNotification(true);
 
-setTimeout(() => setShowNotification(false), 3000);
+      setTimeout(() => setShowNotification(false), 3000);
     } catch (addError) {
       setError(addError instanceof Error ? addError.message : 'Failed to add product to cart');
     } finally {
@@ -726,16 +726,15 @@ setTimeout(() => setShowNotification(false), 3000);
           )} */}
 
           {showNotification && (
-  <div
-    className={`fixed bottom-4 right-4 px-6 py-3 rounded-lg shadow-lg text-white transition-all duration-300 ${
-      notificationType === "success"
-        ? "bg-green-500"
-        : "bg-red-500"
-    }`}
-  >
-    {notificationMessage}
-  </div>
-)}
+            <div
+              className={`fixed bottom-4 left-4 right-4 sm:left-auto sm:right-4 sm:w-auto px-4 sm:px-6 py-3 rounded-lg shadow-lg text-white transition-all duration-300 ${notificationType === "success"
+                  ? "bg-green-500"
+                  : "bg-red-500"
+                }`}
+            >
+              {notificationMessage}
+            </div>
+          )}
         </div>
       </div>
 

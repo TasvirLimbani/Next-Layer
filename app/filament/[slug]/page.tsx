@@ -403,7 +403,7 @@ export default function FilamentDetailPage() {
                     </button>
 
                     {showNotification && (
-                        <div className="fixed bottom-4 right-4 bg-green-600 text-white px-6 py-3 rounded-lg shadow-lg">
+                        <div className="fixed bottom-4 left-4 right-4 sm:left-auto sm:right-4 sm:w-auto bg-green-600 text-white px-4 sm:px-6 py-3 rounded-lg shadow-lg">
                             Added to cart: {filament.title}
                         </div>
                     )}

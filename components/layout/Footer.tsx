@@ -92,18 +92,18 @@ export default function Footer() {
           <div>
             <h4 className="font-semibold mb-4">NEWSLETTER</h4>
             <p className="text-sm text-gray-400 mb-4">Subscribe for exclusive offers and updates.</p>
-            <form onSubmit={handleNewsletterSubmit} className="flex">
+            <form onSubmit={handleNewsletterSubmit} className="flex flex-col gap-2 sm:flex-row sm:gap-0">
               <input
                 type="email"
                 placeholder="Your email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                className="flex-1 px-3 py-2 bg-gray-800 text-white text-sm rounded-l border border-gray-700 focus:outline-none"
+                className="w-full flex-1 px-3 py-2 bg-gray-800 text-white text-sm rounded border border-gray-700 focus:outline-none sm:rounded-r-none"
                 required
               />
               <button
                 type="submit"
-                className="px-4 py-2 text-white text-sm font-medium rounded-r transition"
+                className="px-4 py-2 text-white text-sm font-medium rounded transition sm:rounded-l-none"
                 style={{ backgroundColor: '#C4A57B' }}
               >
                 JOIN
@@ -125,14 +125,14 @@ export default function Footer() {
             <Mail size={18} style={{ color: '#C4A57B' }} className="mt-1" />
             <div>
               <p className="font-semibold text-sm">Email</p>
-              <p className="text-sm text-gray-400">talaviyahardik4@gmail.com</p>
+              <p className="text-sm text-gray-400 break-all">nextlayecreations.info@gmail.com</p>
             </div>
           </div>
           <div className="flex items-start gap-3">
             <MapPin size={18} style={{ color: '#C4A57B' }} className="mt-1" />
             <div>
               <p className="font-semibold text-sm">Address</p>
-              <p className="text-sm text-gray-400">Gujrat, India</p>
+              <p className="text-sm text-gray-400">C2-1215, Pragati IT Park, Mota Varachha, Surat-394101</p>
             </div>
           </div>
         </div>

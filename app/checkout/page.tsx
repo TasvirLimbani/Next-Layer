@@ -286,15 +286,15 @@ export default function CheckoutPage() {
     if (!savedUser) {
       setRemoteCart([]);
       return;
-    }    const user = JSON.parse(savedUser) as UserProfile;
+    } const user = JSON.parse(savedUser) as UserProfile;
 
-      const requestBody: {
-        user_id: number;
-       
-      } = {
-        user_id: Number(user.id)
-        
-      };
+    const requestBody: {
+      user_id: number;
+
+    } = {
+      user_id: Number(user.id)
+
+    };
     // await fetch("api/delete", {
     //   method: "DELETE",
     //   headers: {
@@ -302,33 +302,33 @@ export default function CheckoutPage() {
     //   },
     //   body: JSON.stringify({
     //     user_id: user.id,
-        
+
     //   }),
     // });
 
 
-  const response = await fetch("/api/delete", {
-  method: "DELETE",
-  headers: {
-    "Content-Type": "application/json",
-  },
-  body: JSON.stringify({
-    user_id: user.id,
-  }),
-});
+    const response = await fetch("/api/delete", {
+      method: "DELETE",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        user_id: user.id,
+      }),
+    });
 
-const result = await response.json();
+    const result = await response.json();
 
-if (result.status) {
-  clearCart();
-  setRemoteCart([]);
-  setCheckoutCart([]);
+    if (result.status) {
+      clearCart();
+      setRemoteCart([]);
+      setCheckoutCart([]);
 
 
-  localStorage.removeItem("cart");
-  // Notify Header to refresh cart count
-  window.dispatchEvent(new Event("cart-updated"));
-}
+      localStorage.removeItem("cart");
+      // Notify Header to refresh cart count
+      window.dispatchEvent(new Event("cart-updated"));
+    }
 
 
     const phoneNumber = "919723553038";
@@ -355,7 +355,7 @@ if (result.status) {
       <div className="max-w-7xl mx-auto px-4 py-16 md:py-24">
         <div className="text-center">
           <ShoppingBag size={48} className="mx-auto mb-4 text-gray-400" />
-          <h1 className="text-3xl font-bold mb-4">Your cart is empty</h1>
+          <h1 className="text-2xl sm:text-3xl font-bold mb-4">Your cart is empty</h1>
           <Link href="/shop">
             <button
               className="px-8 py-3 text-white font-semibold rounded hover:opacity-90 transition"
@@ -395,8 +395,8 @@ if (result.status) {
     return (
       <div className="max-w-2xl mx-auto px-4 py-16 md:py-24">
         <div className="text-center border border-green-200 rounded-lg p-8 bg-green-50">
-          <div className="text-5xl mb-4">✓</div>
-          <h1 className="text-3xl font-bold mb-4 text-green-700">Order Placed Successfully!</h1>
+          <div className="text-4xl sm:text-5xl mb-4">✓</div>
+          <h1 className="text-2xl sm:text-3xl font-bold mb-4 text-green-700">Order Placed Successfully!</h1>
           <p className="text-gray-700 mb-4">
             Thank you for your purchase. You will receive a confirmation email shortly.
           </p>
@@ -418,17 +418,17 @@ if (result.status) {
 
   return (
     <div className="max-w-7xl mx-auto px-4 py-12">
-      <h1 className="text-4xl font-bold mb-8">Checkout</h1>
+      <h1 className="text-3xl sm:text-4xl font-bold mb-8">Checkout</h1>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
         {/* Checkout Form */}
         <div className="lg:col-span-2">
           {/* Step Indicator */}
-          <div className="flex gap-4 mb-8">
+          <div className="flex flex-wrap gap-3 sm:gap-4 mb-8">
             {(['shipping', 'payment', 'review'] as const).map((s, idx) => (
               <div key={s} className="flex items-center gap-2">
                 <div
-                  className={`w-8 h-8 rounded-full flex items-center justify-center font-semibold text-sm ${step === s
+                  className={`w-7 h-7 sm:w-8 sm:h-8 rounded-full flex items-center justify-center font-semibold text-xs sm:text-sm ${step === s
                     ? 'text-white'
                     : idx < (['shipping', 'payment', 'review'] as const).indexOf(step)
                       ? 'bg-green-500 text-white'
@@ -444,7 +444,7 @@ if (result.status) {
                 >
                   {idx < (['shipping', 'payment', 'review'] as const).indexOf(step) ? '✓' : idx + 1}
                 </div>
-                <span className="font-semibold capitalize">{s}</span>
+                <span className="font-semibold capitalize text-sm sm:text-base">{s}</span>
               </div>
             ))}
           </div>
@@ -484,7 +484,7 @@ if (result.status) {
                 required
               />
 
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <input
                   type="text"
                   name="city"
@@ -505,7 +505,7 @@ if (result.status) {
                 />
               </div>
 
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <input
                   type="text"
                   name="zipCode"
@@ -551,7 +551,7 @@ if (result.status) {
                 required
               />
 
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <input
                   type="text"
                   name="cardExpiry"
@@ -574,7 +574,7 @@ if (result.status) {
                 />
               </div>
 
-              <div className="flex gap-4 mt-6">
+              <div className="flex flex-col sm:flex-row gap-4 mt-6">
                 <button
                   onClick={() => setStep('shipping')}
                   className="flex-1 py-3 border-2 border-gray-300 font-semibold rounded hover:bg-gray-50 transition"
@@ -616,7 +616,7 @@ if (result.status) {
                 </div>
               </div>
 
-              <div className="flex gap-4 mt-6">
+              <div className="flex flex-col sm:flex-row gap-4 mt-6">
                 <button
                   onClick={() => setStep('payment')}
                   className="flex-1 py-3 border-2 border-gray-300 font-semibold rounded hover:bg-gray-50 transition"
@@ -638,7 +638,7 @@ if (result.status) {
 
         {/* Order Summary */}
         <div className="lg:col-span-1">
-          <div className="border border-gray-200 rounded-lg p-6 bg-gray-50 sticky top-24">
+          <div className="border border-gray-200 rounded-lg p-6 bg-gray-50 lg:sticky lg:top-24">
             <h2 className="text-xl font-bold mb-6">Order Summary</h2>
 
             <div className="space-y-3 mb-6 max-h-64 overflow-y-auto">

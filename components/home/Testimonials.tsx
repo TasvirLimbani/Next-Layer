@@ -87,7 +87,7 @@ export default function Portfolio() {
             <div className="text-center mb-14 px-4">
                 <h2 className="text-3xl sm:text-5xl md:text-6xl font-black">
                     Client
-                    <span className="block bg-gradient-to-r from-purple-700 to-pink-600 bg-clip-text text-transparent">
+                    <span className="block bg-linear-to-r from-purple-700 to-pink-600 bg-clip-text text-transparent">
                         Reviews & Reels
                     </span>
                 </h2>
@@ -104,12 +104,12 @@ export default function Portfolio() {
                         repeat: Infinity,
                         ease: 'linear',
                     }}
-                    className="flex gap-6 w-max bg-white "
+                    className="flex gap-4 sm:gap-6 w-max bg-white px-4 sm:px-0"
                 >
                     {[...reviews, ...reviews].map((review, index) => (
                         <div
                             key={index}
-                            className="w-[320px] sm:w-[420px] md:w-[500px] min-h-[240px] rounded-3xl bg-gradient-to-br from-purple-600 to-pink-500 p-8 text-white shrink-0 "
+                            className="w-[calc(100vw-2rem)] sm:w-105 md:w-125 min-h-60 rounded-3xl bg-linear-to-br from-purple-600 to-pink-500 p-6 sm:p-8 text-white shrink-0"
                         >
                             <div className="flex flex-col h-full justify-between">
                                 <div>

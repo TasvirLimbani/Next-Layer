@@ -75,46 +75,46 @@ export default function WishlistPage() {
         return JSON.parse(rawBody) as WishlistResponse;
     };
 
-const loadWishlist = async () => {
-  try {
-    setLoading(true);
-    setError('');
+    const loadWishlist = async () => {
+        try {
+            setLoading(true);
+            setError('');
 
-    const savedUser = localStorage.getItem('user');
-    const parsedUser = savedUser ? JSON.parse(savedUser) : null;
+            const savedUser = localStorage.getItem('user');
+            const parsedUser = savedUser ? JSON.parse(savedUser) : null;
 
-    const userId = user?.id || parsedUser?.id;
+            const userId = user?.id || parsedUser?.id;
 
-    if (!userId) {
-      setProducts([]);
-      setError('Please login first.');
-      return;
-    }
+            if (!userId) {
+                setProducts([]);
+                setError('Please login first.');
+                return;
+            }
 
-    const response = await fetch(`/api/wishlist?user_id=${userId}`, {
-      cache: 'no-store',
-    });
+            const response = await fetch(`/api/wishlist?user_id=${userId}`, {
+                cache: 'no-store',
+            });
 
-    const data = await response.json();
+            const data = await response.json();
 
-    if (!data?.status && !data?.success) {
-      throw new Error(data?.message || 'Failed to load wishlist');
-    }
+            if (!data?.status && !data?.success) {
+                throw new Error(data?.message || 'Failed to load wishlist');
+            }
 
-    const items: ApiProduct[] =
-      data.wishlist || data.products || data.data?.wishlist || [];
+            const items: ApiProduct[] =
+                data.wishlist || data.products || data.data?.wishlist || [];
 
-    setProducts(items.map(mapApiProductToProduct));
-  } catch (err) {
-    setProducts([]);
-    setError(err instanceof Error ? err.message : 'Failed to load wishlist');
-  } finally {
-    setLoading(false);
-  }
-};
-useEffect(() => {
-  loadWishlist();
-}, [user?.id]);
+            setProducts(items.map(mapApiProductToProduct));
+        } catch (err) {
+            setProducts([]);
+            setError(err instanceof Error ? err.message : 'Failed to load wishlist');
+        } finally {
+            setLoading(false);
+        }
+    };
+    useEffect(() => {
+        loadWishlist();
+    }, [user?.id]);
 
     if (loading) {
         return (
@@ -158,7 +158,7 @@ useEffect(() => {
         <div className="max-w-7xl mx-auto px-4 py-12">
             <div className="mb-8 flex items-end justify-between gap-4 flex-wrap">
                 <div>
-                    <h1 className="text-4xl font-bold mb-2">My Wishlist</h1>
+                    <h1 className="text-3xl sm:text-4xl font-bold mb-2">My Wishlist</h1>
                     <p className="text-gray-600">
                         {products.length} item{products.length !== 1 ? 's' : ''} in your wishlist
                     </p>

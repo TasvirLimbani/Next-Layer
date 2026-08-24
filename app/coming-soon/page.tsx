@@ -14,7 +14,7 @@ export default function ComingSoonPage() {
         <div className="absolute bottom-20 right-1/4 h-72 w-72 rounded-full bg-violet-500/20 blur-3xl" />
       </div>
 
-      <div className="container mx-auto flex min-h-screen items-center justify-center px-6">
+      <div className="container mx-auto flex min-h-screen items-center justify-center px-4 sm:px-6">
         <div className="max-w-3xl text-center">
           <div className="mb-8 inline-flex items-center gap-2 rounded-full border border-slate-700 bg-slate-900/70 px-5 py-2">
             <Printer className="h-4 w-4 text-cyan-400" />
@@ -29,14 +29,14 @@ export default function ComingSoonPage() {
             </div>
           </div>
 
-          <h1 className="mb-6 text-5xl font-extrabold tracking-tight md:text-7xl">
+          <h1 className="mb-6 text-4xl sm:text-5xl font-extrabold tracking-tight md:text-7xl">
             We're Printing
-            <span className="block bg-gradient-to-r from-cyan-400 to-violet-500 bg-clip-text text-transparent">
+            <span className="block bg-linear-to-r from-cyan-400 to-violet-500 bg-clip-text text-transparent">
               Something Amazing
             </span>
           </h1>
 
-          <p className="mx-auto mb-10 max-w-2xl text-lg text-slate-400 md:text-xl">
+          <p className="mx-auto mb-10 max-w-2xl text-base sm:text-lg text-slate-400 md:text-xl">
             Our online store for custom 3D printed products is launching soon.
             Discover unique designs, prototypes, home décor, miniatures, gifts,
             and personalized creations made with precision.
@@ -64,7 +64,7 @@ export default function ComingSoonPage() {
             className="inline-flex items-center gap-2 rounded-xl bg-cyan-500 px-6 py-3 font-semibold text-slate-950 transition hover:bg-cyan-400"
           >
             <Mail className="h-4 w-4" />
-            Contact 
+            Contact
           </a>
         </div>
       </div>
