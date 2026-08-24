@@ -79,7 +79,7 @@ export interface ProductSearchApiResponse {
 }
 
 const DEFAULT_IMAGE = 'https://placehold.co/800x800?text=Product';
-const BASE_IMAGE_HOST = 'https://nextlayer.soon.it';
+const BASE_IMAGE_HOST = 'http://nextlayer.soon.it';
 
 function normalizeImageUrl(input: string): string {
   let value = input.trim();
@@ -95,10 +95,10 @@ function normalizeImageUrl(input: string): string {
 
   value = value
     .replace(/^https?:\/\/localhost(?::\d+)?/i, BASE_IMAGE_HOST)
-    .replace(/^http:\/\/nextlayer\.soon\.it/i, BASE_IMAGE_HOST);
+    .replace(/^https?:\/\/nextlayer\.soon\.it/i, BASE_IMAGE_HOST);
 
   if (value.startsWith('//')) {
-    return `https:${value}`;
+    return `http:${value}`;
   }
 
   if (value.startsWith('/')) {
@@ -145,7 +145,7 @@ function parseImageField(value: unknown): string[] {
     }
   }
 
-  if (trimmed.includes(',') && !trimmed.startsWith('http')) {
+  if (trimmed.includes(',')) {
     return trimmed
       .split(',')
       .map((part) => normalizeImageUrl(part))

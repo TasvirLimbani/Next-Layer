@@ -1,6 +1,6 @@
 import { NextRequest } from 'next/server';
 
-const BASE_IMAGE_HOST = 'https://nextlayer.soon.it';
+const BASE_IMAGE_HOST = 'http://nextlayer.soon.it';
 
 function parsePossiblyWrappedUrl(value: string): string {
   const trimmed = value.trim();
@@ -31,16 +31,25 @@ function normalizeProxyUrl(raw: string): string | null {
     .replace(/\\/g, '')
     .trim();
 
+  if (value.includes(',')) {
+    const firstUrl = value
+      .split(',')
+      .map((part) => part.trim())
+      .find((part) => part.length > 0);
+
+    value = firstUrl ?? '';
+  }
+
   if (!value) {
     return null;
   }
 
   value = value
     .replace(/^https?:\/\/localhost(?::\d+)?/i, BASE_IMAGE_HOST)
-    .replace(/^http:\/\/nextlayer\.soon\.it/i, BASE_IMAGE_HOST);
+    .replace(/^https?:\/\/nextlayer\.soon\.it/i, BASE_IMAGE_HOST);
 
   if (value.startsWith('//')) {
-    value = `https:${value}`;
+    value = `http:${value}`;
   } else if (value.startsWith('/')) {
     value = `${BASE_IMAGE_HOST}${value}`;
   } else if (!/^https?:\/\//i.test(value)) {
