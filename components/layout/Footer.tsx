@@ -219,8 +219,7 @@ export default function Footer() {
                   hover:text-[#C4A57B]
                 "
               >
-                nextlayecreations.info@gmail.com
-              </a>
+                nextlayercreations.info@gmail.com              </a>
             </div>
           </div>
 

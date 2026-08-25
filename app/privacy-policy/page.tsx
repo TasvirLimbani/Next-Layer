@@ -366,8 +366,7 @@ export default function PrivacyPolicyPage() {
                   href="mailto:nextlayecreations.info@gmail.com"
                   className="text-amber-700 hover:text-amber-800 hover:underline"
                 >
-                  nextlayecreations.info@gmail.com
-                </a>
+                  nextlayercreations.info@gmail.com                </a>
               </p>
 
               <p className="text-gray-700">

@@ -206,8 +206,7 @@ export default function AboutPage() {
                         href="mailto:nextlayecreations.info@gmail.com"
                         className="text-amber-600 font-medium hover:underline"
                     >
-                        nextlayecreations.info@gmail.com
-                    </a>
+                        nextlayercreations.info@gmail.com                    </a>
                 </p>
             </section>
         </div>
