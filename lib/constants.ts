@@ -106,9 +106,9 @@ export const NEWSLETTER_TITLE = 'Subscribe for Exclusive Offers';
 export const NEWSLETTER_DESCRIPTION = 'Get 10% off your first order and stay updated on new 3D printed designs.';
 
 // Shipping info
-export const SHIPPING_FREE_THRESHOLD = 100;
-export const STANDARD_SHIPPING = 10;
-export const EXPRESS_SHIPPING = 25;
+export const SHIPPING_FREE_THRESHOLD = 999;
+export const STANDARD_SHIPPING = 149;
+export const EXPRESS_SHIPPING = 249;
 
 // Tax rate
 export const TAX_RATE = 0.08;

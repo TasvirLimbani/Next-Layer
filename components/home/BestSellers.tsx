@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react';
 import ProductCard from '@/components/products/ProductCard';
 import Link from 'next/link';
-import { fetchBestSellerProducts } from '@/lib/products';
+import { fetchBestSellerProducts, fetchProducts } from '@/lib/products';
 import { Product } from '@/lib/types';
 
 export default function BestSellers() {
@@ -18,12 +18,19 @@ export default function BestSellers() {
       try {
         setLoading(true);
 
-        const bestSellers = await fetchBestSellerProducts();
+      const bestSellers = await fetchBestSellerProducts();
 
-        if (isActive) {
-          setProducts(bestSellers);
-          setError('');
-        }
+if (isActive) {
+  if (bestSellers.length > 0) {
+    setProducts(bestSellers);
+  } else {
+    // fallback products
+    const fallbackProducts = await fetchProducts();
+    setProducts(fallbackProducts);
+  }
+
+  setError('');
+}
       } catch (error) {
         console.error('Failed to load best sellers:', error);
 
@@ -104,74 +111,85 @@ export default function BestSellers() {
             Tablet  = 2 columns
             Desktop = 4 columns
         ========================== */}
+{/* Products Grid */}
+<div
+  className="
+    grid
+    grid-cols-2
+    gap-x-3
+    gap-y-7
+    sm:gap-x-4
+    sm:gap-y-9
+    md:grid-cols-2
+    md:gap-6
+    lg:grid-cols-4
+    lg:gap-6
+  "
+>
+  {/* Loading */}
+  {loading &&
+    Array.from({ length: 4 }).map((_, index) => (
+      <div
+        key={`loading-${index}`}
+        className="w-full overflow-hidden rounded-xl bg-white"
+      >
         <div
           className="
-            grid
-            grid-cols-2
-            gap-x-3
-            gap-y-7
-            sm:gap-x-4
-            sm:gap-y-9
-            md:grid-cols-2
-            md:gap-6
-            lg:grid-cols-4
-            lg:gap-6
+            aspect-square
+            w-full
+            animate-pulse
+            rounded-xl
+            bg-gray-100
           "
-        >
-          {/* Loading */}
-          {loading &&
-            Array.from({ length: 4 }).map((_, index) => (
-              <div
-                key={index}
-                className="
-                  w-full
-                  overflow-hidden
-                  rounded-xl
-                  bg-white
-                "
-              >
-                {/* Image skeleton */}
-                <div
-                  className="
-                    aspect-square
-                    w-full
-                    animate-pulse
-                    rounded-xl
-                    bg-gray-100
-                  "
-                />
+        />
 
-                {/* Content skeleton */}
-                <div className="pt-3 sm:pt-4">
-                  <div className="h-3 w-11/12 animate-pulse rounded bg-gray-100" />
-                  <div className="mt-2 h-3 w-8/12 animate-pulse rounded bg-gray-100" />
-                  <div className="mt-3 h-4 w-6/12 animate-pulse rounded bg-gray-100" />
-                </div>
-              </div>
-            ))}
-
-          {/* Error */}
-          {!loading && error && (
-            <div className="col-span-2 py-10 text-center lg:col-span-4">
-              <p className="text-sm text-gray-500">{error}</p>
-            </div>
-          )}
-
-          {/* Products */}
-          {!loading &&
-            !error &&
-            products.map((product) => (
-              <div
-                key={product.id}
-                className="
-                  min-w-0
-                  w-full
-                "
-              >
-                <ProductCard product={product} />
-              </div>
-            ))}
+        <div className="pt-3 sm:pt-4">
+          <div className="h-3 w-11/12 animate-pulse rounded bg-gray-100" />
+          <div className="mt-2 h-3 w-8/12 animate-pulse rounded bg-gray-100" />
+          <div className="mt-3 h-4 w-6/12 animate-pulse rounded bg-gray-100" />
         </div>
+      </div>
+    ))}
+
+  {/* Error */}
+  {!loading && error && (
+    <div className="col-span-2 py-10 text-center lg:col-span-4">
+      <p className="text-sm text-gray-500">{error}</p>
+    </div>
+  )}
+
+  {/* Best Seller Products */}
+  {!loading &&
+    !error &&
+    products.length > 0 &&
+    products.map((product) => (
+      <div
+        key={product.id}
+        className="min-w-0 w-full"
+      >
+        <ProductCard product={product} />
+      </div>
+    ))}
+
+  {/* Empty Best Sellers - show similar placeholders */}
+  {!loading &&
+    !error &&
+    products.length === 0 &&
+    Array.from({ length: 4 }).map((_, index) => (
+      <div
+        key={`empty-${index}`}
+        className="w-full overflow-hidden rounded-xl bg-white"
+      >
+        <div className="aspect-square w-full rounded-xl bg-gray-100" />
+
+        <div className="pt-3 sm:pt-4">
+          <div className="h-3 w-11/12 rounded bg-gray-100" />
+          <div className="mt-2 h-3 w-8/12 rounded bg-gray-100" />
+          <div className="mt-3 h-4 w-6/12 rounded bg-gray-100" />
+        </div>
+      </div>
+    ))}
+</div>
 
         {/* =========================
             VIEW ALL BUTTON
