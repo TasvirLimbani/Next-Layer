@@ -1222,6 +1222,7 @@ import { useParams } from 'next/navigation';
 import { fetchProductById } from '@/lib/products';
 import { Product, UserProfile } from '@/lib/types';
 
+
 export default function ProductDetailPage() {
   const params = useParams();
 
@@ -1891,19 +1892,19 @@ export default function ProductDetailPage() {
               aspect-ratio box guarantees a stable, fully visible image area
               at every breakpoint.
             */}
-            <div className="relative aspect-square w-full overflow-hidden rounded-xl bg-gray-50">
-              {galleryImages.length > 0 ? (
-                <ProductImageGallery
-                  images={galleryImages}
-                  productName={product.name}
-                  defaultImageIndex={0}
-                />
-              ) : (
-                <div className="flex h-full w-full items-center justify-center text-sm text-gray-400">
-                  No image available
-                </div>
-              )}
-            </div>
+           <div className="relative aspect-square w-full overflow-hidden rounded-xl bg-gray-50 ">
+  {galleryImages.length > 0 ? (
+    <ProductImageGallery
+      images={galleryImages}
+      productName={product.name}
+      defaultImageIndex={0}
+    />
+  ) : (
+    <div className="flex h-full w-full items-center justify-center text-sm text-gray-400">
+      No image available
+    </div>
+  )}
+</div>
 
             {discount > 0 && (
               <div
