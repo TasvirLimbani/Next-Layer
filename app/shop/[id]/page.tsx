@@ -51,6 +51,24 @@ export default function ProductDetailPage() {
   const [selectedColor, setSelectedColor] = useState('');
   const [selectedImages, setSelectedImages] = useState<string[]>([]);
 
+  const resolveGalleryImages = (
+    variantImages?: string[],
+    fallbackImages: string[] = [],
+    additionalImages: string[] = []
+  ) => {
+    const preferred = [...new Set((variantImages ?? []).filter(Boolean))];
+    const fallback = [...new Set((fallbackImages ?? []).filter(Boolean))];
+    const extra = [...new Set((additionalImages ?? []).filter(Boolean))];
+
+    const baseList = preferred.length ? preferred : fallback;
+    const merged = [...baseList, ...extra];
+    const uniqueMerged = merged.filter(
+      (image, index) => merged.indexOf(image) === index
+    );
+
+    return uniqueMerged.length ? uniqueMerged : [];
+  };
+
   const [isAddingToCart, setIsAddingToCart] = useState(false);
 
   const [showNotification, setShowNotification] = useState(false);
@@ -120,15 +138,22 @@ export default function ProductDetailPage() {
           Boolean(isInWishlist(matchedProduct.id))
         );
 
-        if (matchedProduct.variants?.length) {
-          setSelectedColor(
-            matchedProduct.variants[0].color
-          );
+        const firstVariant = matchedProduct.variants?.[0];
+        const defaultFallbackImages = matchedProduct.images || [];
 
-          setSelectedImages(
-            matchedProduct.variants[0].images || []
-          );
+        const defaultGalleryImages = resolveGalleryImages(
+          firstVariant?.image_urls?.length
+            ? firstVariant.image_urls
+            : firstVariant?.images,
+          defaultFallbackImages,
+          matchedProduct.similar || []
+        );
+
+        if (firstVariant) {
+          setSelectedColor(firstVariant.color);
         }
+
+        setSelectedImages(defaultGalleryImages);
       } catch (loadError) {
         if (!isActive) return;
 
@@ -160,6 +185,27 @@ export default function ProductDetailPage() {
   useEffect(() => {
     if (!product) return;
 
+    const activeVariant =
+      product.variants?.find(
+        (variant) => variant.color === selectedColor
+      ) || product.variants?.[0];
+
+    const activeVariantImages = activeVariant?.image_urls?.length
+      ? activeVariant.image_urls
+      : activeVariant?.images || [];
+
+    const nextGalleryImages = resolveGalleryImages(
+      activeVariantImages,
+      product.images || [],
+      product.similar || []
+    );
+
+    setSelectedImages(nextGalleryImages);
+  }, [product, selectedColor]);
+
+  useEffect(() => {
+    if (!product) return;
+
     const checkServerWishlist = async () => {
       try {
         const savedUser = localStorage.getItem('user');
@@ -187,13 +233,13 @@ export default function ProductDetailPage() {
 
         const has = Array.isArray(products)
           ? products.some(
-              (p: any) =>
-                String(
-                  p.id ??
-                    p.product_id ??
-                    p.productId
-                ) === String(product.id)
-            )
+            (p: any) =>
+              String(
+                p.id ??
+                p.product_id ??
+                p.productId
+              ) === String(product.id)
+          )
           : false;
 
         setIsWishlisted(Boolean(has));
@@ -327,7 +373,7 @@ export default function ProductDetailPage() {
       if (!response.ok || !data?.success) {
         throw new Error(
           data?.message ||
-            'Failed to add product to cart'
+          'Failed to add product to cart'
         );
       }
 
@@ -336,8 +382,8 @@ export default function ProductDetailPage() {
         quantity,
         customization: customName.trim()
           ? {
-              customName: customName.trim(),
-            }
+            customName: customName.trim(),
+          }
           : undefined,
       });
 
@@ -346,10 +392,9 @@ export default function ProductDetailPage() {
       );
 
       showMessage(
-        `Added to cart! ${
-          customName
-            ? `(${customName})`
-            : ''
+        `Added to cart! ${customName
+          ? `(${customName})`
+          : ''
         }`,
         'success'
       );
@@ -440,12 +485,12 @@ export default function ProductDetailPage() {
       ) {
         throw new Error(
           data.message ||
-            'Failed to update wishlist'
+          'Failed to update wishlist'
         );
       }
 
       if (nextWishlisted) {
-        addToWishlist(product);
+        addToWishlist(product.id);
       } else {
         removeFromWishlist(product.id);
       }
@@ -586,12 +631,14 @@ export default function ProductDetailPage() {
 
   const discount = product.originalPrice
     ? Math.round(
-        ((product.originalPrice -
-          product.price) /
-          product.originalPrice) *
-          100
-      )
+      ((product.originalPrice -
+        product.price) /
+        product.originalPrice) *
+      100
+    )
     : 0;
+
+  const colorVariants = product.variants ?? [];
 
   /*
    * -----------------------------------------
@@ -629,8 +676,10 @@ export default function ProductDetailPage() {
                 images={
                   selectedImages.length
                     ? selectedImages
-                    : product.variants?.[0]
-                        ?.images || []
+                    : resolveGalleryImages(
+                      product.variants?.[0]?.images,
+                      product.images || product.similar || []
+                    )
                 }
                 productName={product.name}
                 defaultImageIndex={0}
@@ -684,13 +733,13 @@ export default function ProductDetailPage() {
             {/* Description */}
             <div
               className="mb-6 text-sm leading-6 text-gray-600 sm:text-base"
-              // dangerouslySetInnerHTML={{
-              //   __html:
-              //     product.description?.replace(
-              //       /\r\n|\n/g,
-              //       '<br />'
-              //     ) || '',
-              // }}
+            // dangerouslySetInnerHTML={{
+            //   __html:
+            //     product.description?.replace(
+            //       /\r\n|\n/g,
+            //       '<br />'
+            //     ) || '',
+            // }}
             />
 
             {/* Rating */}
@@ -700,12 +749,11 @@ export default function ProductDetailPage() {
                   {[...Array(5)].map((_, i) => (
                     <span
                       key={i}
-                      className={`text-base ${
-                        i <
+                      className={`text-base ${i <
                         Math.floor(product.rating)
-                          ? 'text-yellow-400'
-                          : 'text-gray-300'
-                      }`}
+                        ? 'text-yellow-400'
+                        : 'text-gray-300'
+                        }`}
                     >
                       ★
                     </span>
@@ -726,19 +774,17 @@ export default function ProductDetailPage() {
 
               <div className="flex items-center gap-2">
                 <span
-                  className={`h-2.5 w-2.5 rounded-full ${
-                    product.inStock
-                      ? 'bg-green-500'
-                      : 'bg-red-500'
-                  }`}
+                  className={`h-2.5 w-2.5 rounded-full ${product.inStock
+                    ? 'bg-green-500'
+                    : 'bg-red-500'
+                    }`}
                 />
 
                 <span
-                  className={`text-sm ${
-                    product.inStock
-                      ? 'text-green-600'
-                      : 'text-red-600'
-                  }`}
+                  className={`text-sm ${product.inStock
+                    ? 'text-green-600'
+                    : 'text-red-600'
+                    }`}
                 >
                   {product.inStock
                     ? 'In Stock'
@@ -748,14 +794,14 @@ export default function ProductDetailPage() {
             </div>
 
             {/* Colors */}
-            {product.variants?.length > 0 && (
+            {colorVariants.length > 0 && (
               <div className="mb-7">
                 <p className="mb-3 text-sm font-medium text-gray-700">
                   Color
                 </p>
 
                 <div className="flex flex-wrap items-center gap-4">
-                  {product.variants.map(
+                  {colorVariants.map(
                     (variant, index) => {
                       const colorHex =
                         getColorHex(
@@ -774,19 +820,12 @@ export default function ProductDetailPage() {
                           <button
                             type="button"
                             onClick={() => {
-                              setSelectedColor(
-                                variant.color
-                              );
-
-                              setSelectedImages(
-                                variant.images || []
-                              );
+                              setSelectedColor(variant.color);
                             }}
-                            className={`h-10 w-10 rounded-full border-2 transition sm:h-11 sm:w-11 ${
-                              isSelected
-                                ? 'border-gray-900 ring-2 ring-gray-300'
-                                : 'border-gray-300 hover:border-gray-500'
-                            }`}
+                            className={`h-10 w-10 rounded-full border-2 transition sm:h-11 sm:w-11 ${isSelected
+                              ? 'border-gray-900 ring-2 ring-gray-300'
+                              : 'border-gray-300 hover:border-gray-500'
+                              }`}
                             style={{
                               backgroundColor:
                                 colorHex,
@@ -858,60 +897,60 @@ export default function ProductDetailPage() {
 
             {(Number(product.customizable) === 1 ||
               Number(product.image_customizable) === 1) && (
-              <div className="mb-6 border-t border-gray-200">
+                <div className="mb-6 border-t border-gray-200">
 
-                <button
-                  type="button"
-                  onClick={() =>
-                    setCustomizeOpen(
-                      !customizeOpen
-                    )
-                  }
-                  className="flex w-full items-center justify-between border-b border-gray-200 py-4 text-left text-sm font-medium text-gray-700"
-                >
-                  <span>
-                    Customize Your Product
-                  </span>
+                  <button
+                    type="button"
+                    onClick={() =>
+                      setCustomizeOpen(
+                        !customizeOpen
+                      )
+                    }
+                    className="flex w-full items-center justify-between border-b border-gray-200 py-4 text-left text-sm font-medium text-gray-700"
+                  >
+                    <span>
+                      Customize Your Product
+                    </span>
 
-                  {customizeOpen ? (
-                    <ChevronUp
-                      size={18}
-                      className="text-gray-500"
-                    />
-                  ) : (
-                    <ChevronDown
-                      size={18}
-                      className="text-gray-500"
-                    />
+                    {customizeOpen ? (
+                      <ChevronUp
+                        size={18}
+                        className="text-gray-500"
+                      />
+                    ) : (
+                      <ChevronDown
+                        size={18}
+                        className="text-gray-500"
+                      />
+                    )}
+                  </button>
+
+                  {customizeOpen && (
+                    <div className="border-b border-gray-200 pb-5 pt-4">
+                      <CustomizationForm
+                        productName={product.name}
+                        customizable={
+                          Number(
+                            product.customizable
+                          ) === 1
+                        }
+                        imageCustomizable={
+                          Number(
+                            product.image_customizable
+                          ) === 1
+                        }
+                        onCustomize={(
+                          text,
+                          image
+                        ) => {
+                          setCustomName(text);
+                          setCustomImage(image);
+                        }}
+                      />
+                    </div>
                   )}
-                </button>
-
-                {customizeOpen && (
-                  <div className="border-b border-gray-200 pb-5 pt-4">
-                    <CustomizationForm
-                      productName={product.name}
-                      customizable={
-                        Number(
-                          product.customizable
-                        ) === 1
-                      }
-                      imageCustomizable={
-                        Number(
-                          product.image_customizable
-                        ) === 1
-                      }
-                      onCustomize={(
-                        text,
-                        image
-                      ) => {
-                        setCustomName(text);
-                        setCustomImage(image);
-                      }}
-                    />
-                  </div>
-                )}
-              </div>
-            )}
+                </div>
+              )}
 
             {/* Add To Cart */}
             <button
@@ -1130,7 +1169,7 @@ export default function ProductDetailPage() {
             </div>
 
             {/* Shipping */}
-          
+
           </div>
         </div>
 
@@ -1149,11 +1188,10 @@ export default function ProductDetailPage() {
       {/* Notification */}
       {showNotification && (
         <div
-          className={`fixed bottom-4 left-4 right-4 z-50 rounded-xl px-4 py-3 text-center text-sm font-medium text-white shadow-lg sm:left-auto sm:right-5 sm:w-auto ${
-            notificationType === 'success'
-              ? 'bg-green-500'
-              : 'bg-red-500'
-          }`}
+          className={`fixed bottom-4 left-4 right-4 z-50 rounded-xl px-4 py-3 text-center text-sm font-medium text-white shadow-lg sm:left-auto sm:right-5 sm:w-auto ${notificationType === 'success'
+            ? 'bg-green-500'
+            : 'bg-red-500'
+            }`}
         >
           {notificationMessage}
         </div>

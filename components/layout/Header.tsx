@@ -20,6 +20,23 @@ import { fetchUserCart } from '@/lib/cart';
 import { Product } from '@/lib/types';
 import { ScrollArea } from '@/components/ui/scroll-area';
 
+type FilamentMenuBadge = {
+  label: string;
+  color: 'green' | 'violet';
+};
+
+type FilamentMenuItem = {
+  name: string;
+  slug: string;
+  description: string;
+  badge?: FilamentMenuBadge;
+};
+
+type FilamentMenuColumn = {
+  title: string;
+  items: FilamentMenuItem[];
+};
+
 export default function Header() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isSearchOpen, setIsSearchOpen] = useState(false);
@@ -30,6 +47,7 @@ export default function Header() {
   const [searchResults, setSearchResults] = useState<Product[]>([]);
   const [searchLoading, setSearchLoading] = useState(false);
   const [searchError, setSearchError] = useState('');
+  const [filamentColumns, setFilamentColumns] = useState<FilamentMenuColumn[]>([]);
 
   const { user } = useAppContext();
   const [wishlistCount, setWishlistCount] = useState(0);
@@ -266,6 +284,73 @@ export default function Header() {
   }, [isSearchOpen, searchQuery]);
 
   /* -------------------------------------------------
+     FILAMENT MENU DATA
+  ------------------------------------------------- */
+
+  useEffect(() => {
+    let isActive = true;
+
+    const loadFilamentMenu = async () => {
+      try {
+        const response = await fetch('/api/filament', {
+          cache: 'no-store',
+          headers: {
+            Accept: 'application/json',
+          },
+        });
+
+        if (!response.ok) {
+          throw new Error('Failed to load filament menu');
+        }
+
+        const payload = await response.json();
+        const rows = Array.isArray(payload?.data) ? payload.data : [];
+
+        if (!isActive) return;
+
+        const grouped = new Map<string, FilamentMenuColumn>();
+
+        rows.forEach((item: Record<string, unknown>) => {
+          const category = String(item?.category || 'Other').trim() || 'Other';
+          const title = String(item?.title || 'Untitled').trim() || 'Untitled';
+          const slug = String(item?.slug || item?.id || title).trim();
+          const description = String(item?.description || '').trim();
+
+          const existing = grouped.get(category) || {
+            title: category,
+            items: [],
+          };
+
+          existing.items.push({
+            name: title,
+            slug,
+            description,
+          });
+
+          grouped.set(category, existing);
+        });
+
+        const nextColumns = Array.from(grouped.values()).map((column) => ({
+          title: column.title,
+          items: column.items,
+        }));
+
+        setFilamentColumns(nextColumns);
+      } catch {
+        if (isActive) {
+          setFilamentColumns([]);
+        }
+      }
+    };
+
+    loadFilamentMenu();
+
+    return () => {
+      isActive = false;
+    };
+  }, []);
+
+  /* -------------------------------------------------
      CLOSE MOBILE MENU ON DESKTOP
   ------------------------------------------------- */
 
@@ -338,7 +423,7 @@ export default function Header() {
      FILAMENT DATA
   ------------------------------------------------- */
 
-  const filamentColumns = [
+  const fallbackFilamentColumns: FilamentMenuColumn[] = [
     {
       title: 'Functional PLA',
       items: [
@@ -453,6 +538,8 @@ export default function Header() {
     },
   ];
 
+  const visibleFilamentColumns: FilamentMenuColumn[] = filamentColumns.length > 0 ? filamentColumns : fallbackFilamentColumns;
+
   return (
     <header className="sticky top-0 z-[100] w-full bg-white border-b border-gray-200">
 
@@ -527,15 +614,15 @@ export default function Header() {
 
               <div
                 className={`absolute left-1/2 top-full w-[min(94vw,1100px)] -translate-x-1/2 pt-2 transition-all duration-200 ${isFilamentsOpen
-                    ? 'visible pointer-events-auto opacity-100'
-                    : 'invisible pointer-events-none opacity-0'
+                  ? 'visible pointer-events-auto opacity-100'
+                  : 'invisible pointer-events-none opacity-0'
                   }`}
               >
                 <div className="rounded-2xl border border-gray-200 bg-[#f7f7f7] p-6 shadow-[0_18px_55px_rgba(0,0,0,0.16)]">
 
                   <div className="grid grid-cols-4 gap-7">
 
-                    {filamentColumns.map((column) => (
+                    {visibleFilamentColumns.map((column) => (
                       <div key={column.title}>
 
                         <h3 className="text-base font-semibold text-gray-900">
@@ -558,8 +645,8 @@ export default function Header() {
                                 {item.badge && (
                                   <span
                                     className={`rounded-md px-2 py-0.5 text-[10px] font-semibold tracking-wide text-white ${item.badge.color === 'green'
-                                        ? 'bg-emerald-600'
-                                        : 'bg-violet-600'
+                                      ? 'bg-emerald-600'
+                                      : 'bg-violet-600'
                                       }`}
                                   >
                                     {item.badge.label}
@@ -886,8 +973,8 @@ export default function Header() {
                   <ChevronDown
                     size={17}
                     className={`transition-transform ${isMobileFilamentsOpen
-                        ? 'rotate-180'
-                        : ''
+                      ? 'rotate-180'
+                      : ''
                       }`}
                   />
                 </button>
@@ -895,7 +982,7 @@ export default function Header() {
                 {isMobileFilamentsOpen && (
                   <div className="ml-3 mt-1 space-y-1 border-l border-gray-200 pl-3">
 
-                    {filamentColumns.map((column) => (
+                    {visibleFilamentColumns.map((column) => (
                       <div key={column.title} className="pb-2">
 
                         <p className="px-2 py-2 text-xs font-semibold uppercase tracking-wide text-gray-500">
@@ -920,9 +1007,9 @@ export default function Header() {
                               {item.badge && (
                                 <span
                                   className={`rounded px-1.5 py-0.5 text-[8px] font-bold text-white ${item.badge.color ===
-                                      'green'
-                                      ? 'bg-emerald-600'
-                                      : 'bg-violet-600'
+                                    'green'
+                                    ? 'bg-emerald-600'
+                                    : 'bg-violet-600'
                                     }`}
                                 >
                                   {item.badge.label}

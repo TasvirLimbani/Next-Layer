@@ -7,6 +7,7 @@ export interface Product {
   originalPrice?: number;
   image: string;
   images?: string[];
+  similar?: string[];
   description: string;
   rating: number;
   reviews: number;

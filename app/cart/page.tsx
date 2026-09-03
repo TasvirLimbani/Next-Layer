@@ -10,8 +10,6 @@ import {
   ShieldCheck,
   Truck,
   RotateCcw,
-  Minus,
-  Plus,
 } from 'lucide-react';
 
 import {
@@ -60,7 +58,11 @@ export default function CartPage() {
 
       const remoteCart = await fetchUserCart(String(userId));
 
-      setCart(Array.isArray(remoteCart?.items) ? remoteCart.items : []);
+      setCart(
+        Array.isArray(remoteCart?.items)
+          ? remoteCart.items
+          : []
+      );
     } catch (err) {
       console.error('Cart loading error:', err);
 
@@ -78,6 +80,28 @@ export default function CartPage() {
 
   useEffect(() => {
     loadCart();
+  }, [loadCart]);
+
+  /* --------------------------------------------------
+     REFRESH CART WHEN CART IS UPDATED
+  -------------------------------------------------- */
+
+  useEffect(() => {
+    const handleCartUpdated = () => {
+      loadCart();
+    };
+
+    window.addEventListener(
+      'cart-updated',
+      handleCartUpdated
+    );
+
+    return () => {
+      window.removeEventListener(
+        'cart-updated',
+        handleCartUpdated
+      );
+    };
   }, [loadCart]);
 
   /* --------------------------------------------------
@@ -109,14 +133,18 @@ export default function CartPage() {
         );
       }
 
-      window.dispatchEvent(new Event('cart-updated'));
-
       setCart((current) =>
         current.filter(
-          (item) => item.cartId !== cartId
+          (item) => String(item.cartId) !== String(cartId)
         )
       );
+
+      window.dispatchEvent(
+        new Event('cart-updated')
+      );
     } catch (err) {
+      console.error('Delete cart item error:', err);
+
       setError(
         err instanceof Error
           ? err.message
@@ -132,7 +160,8 @@ export default function CartPage() {
   -------------------------------------------------- */
 
   const subtotal = cart.reduce(
-    (sum, item) => sum + Number(item.totalAmount || 0),
+    (sum, item) =>
+      sum + Number(item.totalAmount || 0),
     0
   );
 
@@ -169,6 +198,7 @@ export default function CartPage() {
                   className="rounded-2xl border border-gray-100 p-4 sm:p-5"
                 >
                   <div className="flex gap-4">
+
                     <div className="h-28 w-28 shrink-0 animate-pulse rounded-xl bg-gray-100 sm:h-36 sm:w-36" />
 
                     <div className="flex-1 space-y-3">
@@ -177,6 +207,7 @@ export default function CartPage() {
                       <div className="h-4 w-1/4 animate-pulse rounded bg-gray-100" />
                       <div className="h-6 w-1/4 animate-pulse rounded bg-gray-100" />
                     </div>
+
                   </div>
                 </div>
               ))}
@@ -264,20 +295,20 @@ export default function CartPage() {
           <div className="flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
 
             <div>
+
               <h1 className="text-3xl font-bold tracking-tight text-gray-950 sm:text-4xl">
                 Shopping Cart
               </h1>
 
               <p className="mt-2 text-sm text-gray-500 sm:text-base">
                 {cart.length}{' '}
-                {cart.length === 1 ? 'item' : 'items'} in your cart
+                {cart.length === 1
+                  ? 'item'
+                  : 'items'}{' '}
+                in your cart
               </p>
-            </div>
 
-            {/* <div className="hidden text-sm text-gray-500 sm:block">
-              Free shipping on orders over ₹
-              {SHIPPING_FREE_THRESHOLD}
-            </div> */}
+            </div>
 
           </div>
 
@@ -303,223 +334,322 @@ export default function CartPage() {
 
             <div className="space-y-4 sm:space-y-5">
 
-              {cart.map((item, index) => (
+              {cart.map((item, index) => {
 
-                <article
-                  key={item.cartId}
-                  className={`
-                    group relative overflow-hidden rounded-2xl
-                    border border-gray-200 bg-white
-                    p-3 shadow-sm
-                    transition-all duration-300
-                    hover:-translate-y-0.5
-                    hover:shadow-lg
-                    sm:p-5
-                    ${deletingId === item.cartId
-                      ? 'pointer-events-none opacity-50 scale-[0.98]'
-                      : ''
-                    }
-                  `}
-                  style={{
-                    animationDelay: `${index * 80}ms`,
-                  }}
-                >
+                /* ------------------------------------------
+                   PRODUCT DATA
+                ------------------------------------------ */
 
-                  <div className="flex flex-col gap-4 sm:flex-row sm:gap-5">
+                const remoteItem = item as any;
 
-                    {/* PRODUCT IMAGE */}
+                const product = item.product as any;
 
-                    <Link
-                      href={`/shop/${item.product.id}`}
-                      className="relative block w-full shrink-0 overflow-hidden rounded-xl bg-gray-50 sm:h-36 sm:w-36"
-                    >
+                const sku =
+                  remoteItem?.sku ||
+                  product?.sku ||
+                  '';
 
-                      <div className="relative aspect-square w-full sm:h-full sm:aspect-auto">
+                const productName =
+                  product?.name ||
+                  remoteItem?.title ||
+                  'Product';
 
-                        <Image
-                          src={`/api/image-proxy?url=${encodeURIComponent(
-                            item.product.image
-                          )}`}
-                          alt={item.product.name}
-                          fill
-                          unoptimized
-                          sizes="(max-width: 640px) 100vw, 144px"
-                          className="object-contain p-3 transition-transform duration-500 group-hover:scale-105"
-                        />
+                const productVendor =
+                  product?.vendor ||
+                  remoteItem?.vendor ||
+                  'NEXTLAYERS';
 
-                      </div>
+                const productId =
+                  product?.id ||
+                  remoteItem?.product_id ||
+                  null;
 
-                    </Link>
+                const productSlug =
+                  product?.slug ||
+                  remoteItem?.slug ||
+                  remoteItem?.extra?.slug ||
+                  '';
 
-                    {/* PRODUCT CONTENT */}
+                /* ------------------------------------------
+                   DETECT FILAMENT
+                ------------------------------------------ */
 
-                    <div className="flex min-w-0 flex-1 flex-col">
+                const isFilament =
+                  remoteItem?.type === 'filament' ||
+                  product?.category === 'Filaments' ||
+                  String(sku).toUpperCase().startsWith('FLM-');
 
-                      <div className="flex items-start justify-between gap-3">
+                /* ------------------------------------------
+                   PRODUCT LINK
+                ------------------------------------------ */
 
-                        <div className="min-w-0">
+                let productHref = '/shop';
 
-                          <p className="text-[10px] font-medium uppercase tracking-[0.18em] text-gray-400 sm:text-xs">
-                            {item.product.vendor}
-                          </p>
+                if (isFilament && productSlug) {
+                  productHref = `/filament/${encodeURIComponent(
+                    productSlug
+                  )}`;
+                } else if (!isFilament && productId) {
+                  productHref = `/shop/${encodeURIComponent(
+                    String(productId)
+                  )}`;
+                }
 
-                          <Link
-                            href={`/shop/${item.product.id}`}
-                          >
-                            <h2 className="mt-1 line-clamp-2 text-base font-semibold leading-6 text-gray-900 transition-colors hover:text-amber-700 sm:text-lg">
-                              {item.product.name}
-                            </h2>
-                          </Link>
+                /* ------------------------------------------
+                   PRODUCT IMAGE
+                ------------------------------------------ */
+
+                const productImage =
+                  product?.image ||
+                  product?.images?.[0] ||
+                  remoteItem?.images?.[0] ||
+                  remoteItem?.image_urls?.[0] ||
+                  remoteItem?.extra?.image ||
+                  remoteItem?.extra?.image_url ||
+                  remoteItem?.extra?.customer_image ||
+                  'https://placehold.co/800x800?text=Product';
+
+                /* ------------------------------------------
+                   PRICE
+                ------------------------------------------ */
+
+                const productPrice =
+                  Number(product?.price) ||
+                  (
+                    Number(remoteItem?.totalAmount || 0) /
+                    Math.max(
+                      Number(remoteItem?.quantity || 1),
+                      1
+                    )
+                  ) ||
+                  Number(remoteItem?.price || 0) ||
+                  0;
+
+                /* ------------------------------------------
+                   ITEM TOTAL
+                ------------------------------------------ */
+
+                const itemTotal =
+                  Number(remoteItem?.totalAmount) ||
+                  productPrice *
+                    Number(remoteItem?.quantity || 1);
+
+                return (
+                  <article
+                    key={item.cartId}
+                    className={`
+                      group relative overflow-hidden rounded-2xl
+                      border border-gray-200 bg-white
+                      p-3 shadow-sm
+                      transition-all duration-300
+                      hover:-translate-y-0.5
+                      hover:shadow-lg
+                      sm:p-5
+                      ${
+                        deletingId === String(item.cartId)
+                          ? 'pointer-events-none scale-[0.98] opacity-50'
+                          : ''
+                      }
+                    `}
+                    style={{
+                      animationDelay: `${index * 80}ms`,
+                    }}
+                  >
+
+                    <div className="flex flex-col gap-4 sm:flex-row sm:gap-5">
+
+                      {/* ==================================
+                          PRODUCT IMAGE
+                      ================================== */}
+
+                      <Link
+                        href={productHref}
+                        className="relative block w-full shrink-0 overflow-hidden rounded-xl bg-gray-50 sm:h-36 sm:w-36"
+                      >
+
+                        <div className="relative aspect-square w-full sm:h-full sm:aspect-auto">
+
+                          <Image
+                            src={`/api/image-proxy?url=${encodeURIComponent(
+                              productImage
+                            )}`}
+                            alt={productName}
+                            fill
+                            unoptimized
+                            sizes="(max-width: 640px) 100vw, 144px"
+                            className="object-contain p-3 transition-transform duration-500 group-hover:scale-105"
+                          />
 
                         </div>
 
-                        {/* DELETE */}
+                      </Link>
 
-                        <button
-                          type="button"
-                          onClick={() =>
-                            handleDelete(item.cartId)
-                          }
-                          disabled={
-                            deletingId === item.cartId
-                          }
-                          className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-gray-200 text-gray-400 transition-all duration-200 hover:border-red-200 hover:bg-red-50 hover:text-red-600 disabled:cursor-not-allowed"
-                          aria-label={`Delete ${item.product.name}`}
-                        >
-                          <Trash2 size={16} />
-                        </button>
+                      {/* ==================================
+                          PRODUCT CONTENT
+                      ================================== */}
 
-                      </div>
+                      <div className="flex min-w-0 flex-1 flex-col">
 
-                      {/* CUSTOM OPTIONS */}
+                        <div className="flex items-start justify-between gap-3">
 
-                      {item.extra && (
-                        <div className="mt-3">
+                          <div className="min-w-0">
 
-                          <div className="flex flex-wrap gap-1.5">
+                            <p className="text-[10px] font-medium uppercase tracking-[0.18em] text-gray-400 sm:text-xs">
+                              {productVendor}
+                            </p>
 
-                            {item.extra.customization && (
-                              <span className="rounded-full bg-gray-100 px-2.5 py-1 text-[11px] font-medium text-gray-600">
-                                Custom: {item.extra.customization}
-                              </span>
-                            )}
-
-                            {item.extra.colour && (
-                              <span className="rounded-full bg-gray-100 px-2.5 py-1 text-[11px] font-medium text-gray-600">
-                                Colour: {item.extra.colour}
-                              </span>
-                            )}
-
-                            {item.extra.diameter && (
-                              <span className="rounded-full bg-gray-100 px-2.5 py-1 text-[11px] font-medium text-gray-600">
-                                Diameter: {item.extra.diameter}
-                              </span>
-                            )}
-
-                            {item.extra.weight && (
-                              <span className="rounded-full bg-gray-100 px-2.5 py-1 text-[11px] font-medium text-gray-600">
-                                Weight: {item.extra.weight}
-                              </span>
-                            )}
+                            <Link href={productHref}>
+                              <h2 className="mt-1 line-clamp-2 text-base font-semibold leading-6 text-gray-900 transition-colors hover:text-amber-700 sm:text-lg">
+                                {productName}
+                              </h2>
+                            </Link>
 
                           </div>
 
-                          {/* CUSTOMER IMAGE */}
+                          {/* DELETE */}
 
-                          {item.extra.customer_image && (
-                            <div className="mt-3 flex items-center gap-3">
+                          <button
+                            type="button"
+                            onClick={() =>
+                              handleDelete(
+                                String(item.cartId)
+                              )
+                            }
+                            disabled={
+                              deletingId ===
+                              String(item.cartId)
+                            }
+                            className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-gray-200 text-gray-400 transition-all duration-200 hover:border-red-200 hover:bg-red-50 hover:text-red-600 disabled:cursor-not-allowed"
+                            aria-label={`Delete ${productName}`}
+                          >
+                            <Trash2 size={16} />
+                          </button>
 
-                              <div className="relative h-14 w-14 shrink-0 overflow-hidden rounded-lg border border-gray-200 bg-gray-50">
-                                <Image
-                                  src={`/api/image-proxy?url=${encodeURIComponent(
-                                    item.extra.customer_image
-                                  )}`}
-                                  alt="Customer uploaded image"
-                                  fill
-                                  unoptimized
-                                  className="object-contain p-1"
-                                />
-                              </div>
+                        </div>
 
-                              <div>
-                                <p className="text-[10px] uppercase tracking-wider text-gray-400">
-                                  Customer Image
-                                </p>
+                        {/* ==================================
+                            SKU
+                        ================================== */}
 
-                                <p className="mt-0.5 text-xs text-gray-600">
-                                  Custom uploaded design
-                                </p>
-                              </div>
+                        {sku && (
+                          <p className="mt-2 text-[11px] text-gray-400">
+                            SKU: {sku}
+                          </p>
+                        )}
+
+                        {/* ==================================
+                            CUSTOM OPTIONS
+                        ================================== */}
+
+                        {item.extra && (
+                          <div className="mt-3">
+
+                            <div className="flex flex-wrap gap-1.5">
+
+                              {item.extra.customization && (
+                                <span className="rounded-full bg-gray-100 px-2.5 py-1 text-[11px] font-medium text-gray-600">
+                                  Custom:{' '}
+                                  {item.extra.customization}
+                                </span>
+                              )}
+
+                              {item.extra.colour && (
+                                <span className="rounded-full bg-gray-100 px-2.5 py-1 text-[11px] font-medium text-gray-600">
+                                  Colour:{' '}
+                                  {item.extra.colour}
+                                </span>
+                              )}
+
+                              {item.extra.diameter && (
+                                <span className="rounded-full bg-gray-100 px-2.5 py-1 text-[11px] font-medium text-gray-600">
+                                  Diameter:{' '}
+                                  {item.extra.diameter}
+                                </span>
+                              )}
+
+                              {item.extra.weight && (
+                                <span className="rounded-full bg-gray-100 px-2.5 py-1 text-[11px] font-medium text-gray-600">
+                                  Weight:{' '}
+                                  {item.extra.weight}
+                                </span>
+                              )}
 
                             </div>
-                          )}
 
-                        </div>
-                      )}
+                            {/* CUSTOMER IMAGE */}
 
-                      {/* BOTTOM */}
+                            {item.extra.customer_image && (
+                              <div className="mt-3 flex items-center gap-3">
 
-                      <div className="mt-4 flex flex-col gap-3 border-t border-gray-100 pt-3 sm:mt-auto sm:flex-row sm:items-end sm:justify-between">
+                                <div className="relative h-14 w-14 shrink-0 overflow-hidden rounded-lg border border-gray-200 bg-gray-50">
 
-                        {/* PRICE */}
+                                  <Image
+                                    src={`/api/image-proxy?url=${encodeURIComponent(
+                                      item.extra.customer_image
+                                    )}`}
+                                    alt="Customer uploaded image"
+                                    fill
+                                    unoptimized
+                                    className="object-contain p-1"
+                                  />
 
-                        <div>
-                          <p className="text-xs text-gray-400">
-                            Price
-                          </p>
+                                </div>
 
-                          <p className="mt-0.5 text-lg font-bold text-gray-950">
-                            ₹
-                            {Number(
-                              item.product.price
-                            ).toFixed(2)}
-                          </p>
-                        </div>
+                                <div>
 
-                        {/* QTY */}
+                                  <p className="text-[10px] uppercase tracking-wider text-gray-400">
+                                    Customer Image
+                                  </p>
 
-                        <div className="flex items-center justify-between gap-4 sm:justify-end">
-{/* 
-                          <span className="text-xs font-medium text-gray-500">
-                            Quantity
-                          </span> */}
+                                  <p className="mt-0.5 text-xs text-gray-600">
+                                    Custom uploaded design
+                                  </p>
 
-                          {/* <div className="flex h-9 items-center rounded-lg border border-gray-200 bg-gray-50">
+                                </div>
 
-                            <button
-                              type="button"
-                              disabled
-                              className="flex h-full w-9 items-center justify-center text-gray-300"
-                            >
-                              <Minus size={14} />
-                            </button>
+                              </div>
+                            )}
 
-                            <span className="flex h-full min-w-8 items-center justify-center border-x border-gray-200 bg-white px-2 text-sm font-semibold text-gray-900">
-                              {item.quantity}
-                            </span>
+                          </div>
+                        )}
 
-                            <button
-                              type="button"
-                              disabled
-                              className="flex h-full w-9 items-center justify-center text-gray-300"
-                            >
-                              <Plus size={14} />
-                            </button>
+                        {/* ==================================
+                            BOTTOM
+                        ================================== */}
 
-                          </div> */}
+                        <div className="mt-4 flex flex-col gap-3 border-t border-gray-100 pt-3 sm:mt-auto sm:flex-row sm:items-end sm:justify-between">
 
-                          <div className="text-right">
+                          {/* PRICE */}
 
-                            <p className="text-[10px] text-gray-400">
-                              Item Total
+                          <div>
+
+                            <p className="text-xs text-gray-400">
+                              Price
                             </p>
 
-                            <p className="text-base font-bold text-gray-950">
+                            <p className="mt-0.5 text-lg font-bold text-gray-950">
                               ₹
-                              {Number(
-                                item.totalAmount
-                              ).toFixed(2)}
+                              {productPrice.toFixed(2)}
                             </p>
+
+                          </div>
+
+                          {/* QUANTITY / TOTAL */}
+
+                          <div className="flex items-center justify-between gap-4 sm:justify-end">
+
+                            <div className="text-right">
+
+                              <p className="text-[10px] text-gray-400">
+                                Quantity: {item.quantity}
+                              </p>
+
+                              <p className="text-base font-bold text-gray-950">
+                                ₹
+                                {itemTotal.toFixed(2)}
+                              </p>
+
+                            </div>
 
                           </div>
 
@@ -529,11 +659,9 @@ export default function CartPage() {
 
                     </div>
 
-                  </div>
-
-                </article>
-
-              ))}
+                  </article>
+                );
+              })}
 
             </div>
 
@@ -577,6 +705,8 @@ export default function CartPage() {
 
                 <div className="space-y-4 text-sm">
 
+                  {/* SUBTOTAL */}
+
                   <div className="flex items-center justify-between gap-4">
 
                     <span className="text-gray-500">
@@ -588,6 +718,8 @@ export default function CartPage() {
                     </span>
 
                   </div>
+
+                  {/* SHIPPING */}
 
                   <div className="flex items-center justify-between gap-4">
 
@@ -607,16 +739,21 @@ export default function CartPage() {
 
                   </div>
 
+                  {/* FREE SHIPPING MESSAGE */}
+
                   {shipping > 0 && (
                     <div className="rounded-lg bg-white px-3 py-2.5 text-xs leading-5 text-gray-500">
                       Add ₹
                       {Math.max(
                         0,
-                        SHIPPING_FREE_THRESHOLD - subtotal
+                        SHIPPING_FREE_THRESHOLD -
+                          subtotal
                       ).toFixed(2)}{' '}
                       more to get free shipping.
                     </div>
                   )}
+
+                  {/* TAX */}
 
                   <div className="flex items-center justify-between gap-4">
 
@@ -660,6 +797,8 @@ export default function CartPage() {
                   CONTINUE TO CHECKOUT
                 </Link>
 
+                {/* CONTINUE SHOPPING */}
+
                 <Link
                   href="/shop"
                   className="mt-3 flex w-full items-center justify-center rounded-xl border-2 border-gray-200 bg-white px-5 py-3 text-sm font-semibold text-gray-900 transition-all duration-300 hover:border-gray-300 hover:bg-gray-100"
@@ -675,6 +814,8 @@ export default function CartPage() {
 
                 <div className="space-y-4">
 
+                  {/* SECURE CHECKOUT */}
+
                   <div className="flex items-center gap-3">
 
                     <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-gray-50">
@@ -685,6 +826,7 @@ export default function CartPage() {
                     </div>
 
                     <div>
+
                       <p className="text-xs font-semibold text-gray-900">
                         Secure Checkout
                       </p>
@@ -692,9 +834,12 @@ export default function CartPage() {
                       <p className="mt-0.5 text-[11px] text-gray-500">
                         Your payment is protected
                       </p>
+
                     </div>
 
                   </div>
+
+                  {/* FAST SHIPPING */}
 
                   <div className="flex items-center gap-3">
 
@@ -706,6 +851,7 @@ export default function CartPage() {
                     </div>
 
                     <div>
+
                       <p className="text-xs font-semibold text-gray-900">
                         Fast Shipping
                       </p>
@@ -713,9 +859,12 @@ export default function CartPage() {
                       <p className="mt-0.5 text-[11px] text-gray-500">
                         Reliable delivery
                       </p>
+
                     </div>
 
                   </div>
+
+                  {/* SUPPORT */}
 
                   <div className="flex items-center gap-3">
 
@@ -727,6 +876,7 @@ export default function CartPage() {
                     </div>
 
                     <div>
+
                       <p className="text-xs font-semibold text-gray-900">
                         Easy Support
                       </p>
@@ -734,6 +884,7 @@ export default function CartPage() {
                       <p className="mt-0.5 text-[11px] text-gray-500">
                         We're here to help
                       </p>
+
                     </div>
 
                   </div>

@@ -35,6 +35,11 @@ export interface ApiProduct {
 
   images?: string[];
   image_urls?: string[];
+  similar?: Array<{
+    image?: string;
+    image_url?: string;
+    url?: string;
+  }>;
 
   variants?: ProductVariant[];
 
@@ -167,54 +172,83 @@ function pickFirstImageList(candidates: unknown[]): string[] {
   return [];
 }
 
+function uniqueImageList(images: string[]): string[] {
+  return [...new Set(images.filter(Boolean))];
+}
+
 export function mapApiProductToProduct(apiProduct: ApiProduct): Product {
- const imageList = pickFirstImageList([
-  apiProduct.variants?.[0]?.image_urls,
-  apiProduct.variants?.[0]?.images,
-  apiProduct.image_urls,
-  apiProduct.images,
-]);
+  const similarImages = uniqueImageList(
+    (apiProduct.similar ?? []).flatMap((item) =>
+      parseImageField(item?.image_url ?? item?.image ?? item?.url ?? '')
+    )
+  );
 
-  // Parse color - handle both JSON array string and plain string
-const color =
-  apiProduct.variants?.[0]?.color ||
-  apiProduct.color ||
-  "Natural"; 
- return {
-  id: String(apiProduct.id),
-  name: apiProduct.product_name,
-  vendor: apiProduct.subcategory || apiProduct.category || "3D Print Store",
-  category: apiProduct.category || "Uncategorized",
-  price: Number(apiProduct.price) || 0,
+  const firstVariantImages = uniqueImageList(
+    pickFirstImageList([
+      apiProduct.variants?.[0]?.image_urls,
+      apiProduct.variants?.[0]?.images,
+    ])
+  );
 
-  image: imageList[0] || DEFAULT_IMAGE,
-  images: imageList.length ? imageList : [DEFAULT_IMAGE],
+  const baseProductImages = uniqueImageList(
+    pickFirstImageList([
+      apiProduct.image_urls,
+      apiProduct.images,
+    ])
+  );
 
-  description: apiProduct.description || "",
+  const productImages = uniqueImageList([
+    ...firstVariantImages,
+    ...baseProductImages,
+    ...similarImages,
+  ]);
 
-  rating: 0,
-  reviews: 0,
+  const imageList = productImages.length ? productImages : [DEFAULT_IMAGE];
 
-  inStock: Number(apiProduct.stock) > 0,
+  const color =
+    apiProduct.variants?.[0]?.color ||
+    apiProduct.color ||
+    'Natural';
 
-  tags: [apiProduct.category, apiProduct.subcategory].filter(Boolean) as string[],
+  return {
+    id: String(apiProduct.id),
+    name: apiProduct.product_name,
+    vendor: apiProduct.subcategory || apiProduct.category || '3D Print Store',
+    category: apiProduct.category || 'Uncategorized',
+    price: Number(apiProduct.price) || 0,
 
-  sku: apiProduct.sku,
+    image: productImages[0],
+    images: productImages,
+    similar: similarImages,
 
-  color,
+    description: apiProduct.description || '',
 
-  customizable: Boolean(apiProduct.customizable),
+    rating: 0,
+    reviews: 0,
 
-  image_customizable: Boolean(apiProduct.image_customizable),
+    inStock: Number(apiProduct.stock) > 0,
 
-  // ✅ ADD THIS
-  variants:
-    apiProduct.variants?.map((variant) => ({
-      color: variant.color,
-      images: pickFirstImageList([variant.image_urls, variant.images]),
-      image_urls: pickFirstImageList([variant.image_urls, variant.images]),
-    })) ?? [],
-};
+    tags: [apiProduct.category, apiProduct.subcategory].filter(Boolean) as string[],
+
+    sku: apiProduct.sku,
+
+    color,
+
+    customizable: Boolean(apiProduct.customizable),
+
+    image_customizable: Boolean(apiProduct.image_customizable),
+
+    variants:
+      apiProduct.variants?.map((variant) => ({
+        color: variant.color,
+        images: uniqueImageList(
+          pickFirstImageList([variant.image_urls, variant.images])
+        ),
+        image_urls: uniqueImageList(
+          pickFirstImageList([variant.image_urls, variant.images])
+        ),
+      })) ?? [],
+  };
 }
 
 export async function fetchProducts(): Promise<Product[]> {

@@ -46,6 +46,7 @@ export default function CheckoutPage() {
   const [formData, setFormData] = useState({
     email: '',
     firstName: '',
+    phone: '',
     address: '',
     city: '',
     state: '',
@@ -60,6 +61,7 @@ export default function CheckoutPage() {
       ...prev,
       email: user.email || prev.email,
       firstName: (user.name || '').trim() || prev.firstName,
+      phone: user.phone || prev.phone,
       address: address?.address || user.address || prev.address,
       city: address?.city || prev.city,
       state: address?.state || prev.state,
@@ -123,7 +125,13 @@ export default function CheckoutPage() {
   }, [loadCart]);
 
   const visibleCart = checkoutCart;
-  const subtotal = visibleCart.reduce((sum, item) => sum + item.product.price * item.quantity, 0);
+  const subtotal = visibleCart.reduce((sum, item) => {
+    const price = Number(item.product.price) || 0;
+    const quantity = Number(item.quantity) || 0;
+
+    return sum + price * quantity;
+  }, 0);
+
   const total = subtotal;
 
 
@@ -178,176 +186,298 @@ export default function CheckoutPage() {
     }, 2000);
   };
 
-  // const handleWhatsAppCheckout = () => {
-  //   const orderId = `ORD-${Date.now()}`;
 
-  //   let message = `🛍️ *New Order*\n\n`;
-
-  //   message += `📦 Order ID: ${orderId}\n\n`;
-
-  //   message += `👤 Customer Details\n`;
-  //   message += `Name: ${formData.firstName}\n`;
-  //   message += `Email: ${formData.email}\n`;
-  //   message += `Address: ${formData.address}\n`;
-  //   message += `City: ${formData.city}\n`;
-  //   message += `State: ${formData.state}\n`;
-  //   message += `Zip Code: ${formData.zipCode}\n\n`;
-
-  //   message += `🛒 Order Items\n`;
-
-  //   // visibleCart.forEach((item, index) => {
-  //   //   message += `${index + 1}. ${item.product.name}\n`;
-  //   //   message += `   Qty: ${item.quantity}\n`;
-  //   //   message += `   Price: ₹${item.product.price}\n`;
-
-  //   //   if (
-  //   //     typeof item.customization === "string" &&
-  //   //     item.customization.trim()
-  //   //   ) {
-  //   //     message += `   Custom: ${item.customization}\n`;
-  //   //   }
-
-  //   //   message += `\n`;
-  //   // });
-  //   visibleCart.forEach((item, index) => {
-  //     message += `${index + 1}. ${item.product.name}\n`;
-  //     message += `SKU: ${item.product.sku || "N/A"}\n`;
-  //     message += `Qty: ${item.quantity}\n`;
-  //     message += `Price: ₹${item.product.price}\n`;
-
-  //     // Customization
-  //     if (item.extra?.customization) {
-  //       message += `Customization: ${item.extra.customization}\n`;
-  //     }
-
-  //     // Customer Image
-  //     if (item.extra?.customer_image) {
-  //       message += `Image: ${item.extra.customer_image}\n`;
-  //     }
-
-  //     message += "\n";
-  //   });
-
-
-
-  //   message += `📌 Subtotal: ₹${subtotal.toFixed(2)}\n`;
-
-  //   message += `💰 Total: ₹${total.toFixed(2)}\n`;
-
-  //   const phoneNumber = "919723553038"; // Your WhatsApp Number
-
-  //   const whatsappUrl = `https://wa.me/${phoneNumber}?text=${encodeURIComponent(
-  //     message
-  //   )}`;
-
-  //   window.open(whatsappUrl, "_blank");
-  // };
 
 
   const handleWhatsAppCheckout = async () => {
-    const orderId = `ORD-${Date.now()}`;
+    try {
+      setIsProcessing(true);
+      setCartError("");
 
-    let message = `🛍️ *New Order*\n\n`;
+      // ==============================
+      // 1. Get logged-in user
+      // ==============================
+      const savedUser = localStorage.getItem("user");
 
-    message += `📦 Order ID: ${orderId}\n\n`;
-
-    message += `👤 Customer Details\n`;
-    message += `Name: ${formData.firstName}\n`;
-    message += `Email: ${formData.email}\n`;
-    message += `Address: ${formData.address}\n`;
-    message += `City: ${formData.city}\n`;
-    message += `State: ${formData.state}\n`;
-    message += `Zip Code: ${formData.zipCode}\n\n`;
-
-    message += `🛒 Order Items\n`;
-
-    visibleCart.forEach((item, index) => {
-      message += `${index + 1}. ${item.product.name}\n`;
-      message += `SKU: ${item.product.sku || "N/A"}\n`;
-      message += `Qty: ${item.quantity}\n`;
-      message += `Price: ₹${item.product.price}\n`;
-
-      if (item.extra?.customization) {
-        message += `Customization: ${item.extra.customization}\n`;
+      if (!savedUser) {
+        setCartError("Please log in to place an order.");
+        return;
       }
 
-      if (item.extra?.customer_image) {
-        message += `Image: ${item.extra.customer_image}\n`;
+      const user = JSON.parse(savedUser) as UserProfile;
+
+      if (!user?.id) {
+        setCartError("Invalid user. Please log in again.");
+        return;
       }
 
-      message += "\n";
-    });
+      // ==============================
+      // 2. Validate shipping details
+      // ==============================
+      const shippingName = formData.firstName.trim() || user.name?.trim() || "";
+      const shippingPhone = formData.phone.trim() || user.phone?.trim() || "";
 
-    message += `📌 Subtotal: ₹${subtotal.toFixed(2)}\n`;
-    message += `💰 Total: ₹${total.toFixed(2)}\n`;
-    clearCart();
-    const savedUser = localStorage.getItem('user');
+      if (
+        !shippingName ||
+        !shippingPhone ||
+        !formData.address.trim() ||
+        !formData.city.trim() ||
+        !formData.state.trim() ||
+        !formData.zipCode.trim()
+      ) {
+        setCartError("Please fill all shipping information.");
+        return;
+      }
 
-    if (!savedUser) {
-      setRemoteCart([]);
-      return;
-    } const user = JSON.parse(savedUser) as UserProfile;
+      // ==============================
+      // 3. Validate cart
+      // ==============================
+      if (!visibleCart || visibleCart.length === 0) {
+        setCartError("Your cart is empty.");
+        return;
+      }
 
-    const requestBody: {
-      user_id: number;
+      if (total <= 0) {
+        setCartError(
+          "Unable to place order because the product price is ₹0. Please refresh the cart and try again."
+        );
+        return;
+      }
 
-    } = {
-      user_id: Number(user.id)
+      // ==============================
+      // 4. Generate Order ID
+      // ==============================
+      const orderId = `ORD-${Date.now()}`;
 
-    };
-    // await fetch("api/delete", {
-    //   method: "DELETE",
-    //   headers: {
-    //     "Content-Type": "application/json",
-    //   },
-    //   body: JSON.stringify({
-    //     user_id: user.id,
+      // ==============================
+      // 5. Create order payload
+      // ==============================
+      const payload = {
+        user_id: Number(user.id),
 
-    //   }),
-    // });
+        payment_id: orderId,
 
+        total_amount: Number(total.toFixed(2)),
 
-    const response = await fetch("/api/delete", {
-      method: "DELETE",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        user_id: user.id,
-      }),
-    });
+        order_status: "Pending",
 
-    const result = await response.json();
+        tracking_id: null,
 
-    if (result.status) {
-      clearCart();
-      setRemoteCart([]);
-      setCheckoutCart([]);
+        shipping_address: {
+          name: shippingName,
+          phone: shippingPhone,
+          address: formData.address.trim(),
+          city: formData.city.trim(),
+          state: formData.state.trim(),
+          pincode: formData.zipCode.trim(),
+        },
 
+        items: visibleCart.map((item: any, index: number) => {
+          const product = item?.product || {};
 
-      localStorage.removeItem("cart");
-      // Notify Header to refresh cart count
-      window.dispatchEvent(new Event("cart-updated"));
+          const productId = Number(
+            product?.id ??
+            product?.product_id ??
+            item?.product_id ??
+            item?.productId ??
+            item?.id ??
+            0
+          );
+
+          const productName = String(
+            product?.name ??
+            product?.product_name ??
+            product?.title ??
+            product?.productName ??
+            item?.product_name ??
+            item?.productName ??
+            item?.name ??
+            item?.title ??
+            item?.product_title ??
+            ""
+          ).trim();
+
+          const sku = String(
+            product?.sku ??
+            product?.SKU ??
+            item?.sku ??
+            item?.SKU ??
+            productId
+          ).trim();
+
+          const price = Number(
+            product?.price ??
+            item?.price ??
+            0
+          );
+
+          const quantity = Number(item?.quantity ?? 1);
+
+          console.log(`ORDER ITEM ${index + 1}:`, {
+            item,
+            product,
+            productId,
+            productName,
+            sku,
+            price,
+            quantity,
+          });
+
+        const productType =
+  String(
+    item?.type ??
+    product?.type ??
+    ""
+  ).toLowerCase() === "filament"
+    ? "filament"
+    : "product";
+
+return {
+  product_id: productId,
+  product_name: productName,
+  sku,
+  quantity,
+  price,
+
+  product_type: productType,
+
+  customization:
+    item?.extra?.customization ??
+    item?.customization ??
+    product?.customization ??
+    "",
+
+  customer_image:
+    item?.extra?.customer_image ??
+    item?.customer_image ??
+    product?.customer_image ??
+    "",
+};
+        }),
+      };
+      console.log("Creating Order:", payload);
+
+      // ==============================
+      // 6. ADD ORDER API
+      // ==============================
+      const orderResponse = await fetch("/api/orders", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(payload),
+        cache: "no-store",
+      });
+
+      const orderData = await orderResponse.json();
+
+      console.log("Order API Response:", orderData);
+
+      // ==============================
+      // 7. Check API response
+      // ==============================
+      if (!orderResponse.ok || !orderData?.status) {
+        throw new Error(
+          orderData?.message || "Failed to create order"
+        );
+      }
+
+      // ==============================
+      // 8. Create WhatsApp message
+      // ==============================
+      let message = `🛍️ *NEW ORDER*\n\n`;
+
+      message += `📦 *Order ID:* ${orderId}\n\n`;
+
+      message += `👤 *CUSTOMER DETAILS*\n`;
+      message += `Name: ${shippingName}\n`;
+      message += `Email: ${formData.email}\n`;
+      message += `Phone: ${shippingPhone}\n`;
+      message += `Address: ${formData.address}\n`;
+      message += `City: ${formData.city}\n`;
+      message += `State: ${formData.state}\n`;
+      message += `Zip Code: ${formData.zipCode}\n\n`;
+
+      message += `🛒 *ORDER ITEMS*\n\n`;
+
+      visibleCart.forEach((item: any, index: number) => {
+        message += `${index + 1}. ${item.product.name}\n`;
+        message += `SKU: ${item.product.sku || item.product.id || "N/A"}\n`;
+        message += `Qty: ${item.quantity}\n`;
+        message += `Price: ₹${Number(item.product.price).toFixed(2)}\n`;
+
+        const customization =
+          item.extra?.customization ||
+          item.customization ||
+          "";
+
+        if (customization) {
+          message += `Customization: ${customization}\n`;
+        }
+
+        if (item.extra?.customer_image) {
+          message += `Image: ${item.extra.customer_image}\n`;
+        }
+
+        message += `\n`;
+      });
+
+      message += `📌 *Subtotal:* ₹${subtotal.toFixed(2)}\n`;
+      message += `💰 *TOTAL:* ₹${total.toFixed(2)}\n`;
+
+      // ==============================
+      // 9. Clear server cart
+      // ==============================
+      const deleteResponse = await fetch("/api/delete", {
+        method: "DELETE",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          user_id: user.id,
+        }),
+      });
+
+      const deleteResult = await deleteResponse.json();
+
+      if (deleteResult?.status) {
+        clearCart();
+        setRemoteCart([]);
+        setCheckoutCart([]);
+
+        localStorage.removeItem("cart");
+
+        window.dispatchEvent(
+          new Event("cart-updated")
+        );
+      }
+
+      // ==============================
+      // 10. Open WhatsApp
+      // ==============================
+      const phoneNumber = "919723553038";
+
+      const whatsappUrl =
+        `https://wa.me/${phoneNumber}?text=${encodeURIComponent(message)}`;
+
+      window.open(whatsappUrl, "_blank");
+
+      // ==============================
+      // 11. Show success page
+      // ==============================
+      setOrderPlaced(true);
+
+    } catch (error) {
+      console.error("Checkout Error:", error);
+
+      setCartError(
+        error instanceof Error
+          ? error.message
+          : "Unable to place order."
+      );
+    } finally {
+      setIsProcessing(false);
     }
-
-
-    const phoneNumber = "919723553038";
-    // clearServerCart();  
-
-    const whatsappUrl = `http://wa.me/${phoneNumber}?text=${encodeURIComponent(
-      message
-    )}`;
-
-
-
-    // Open WhatsApp first
-    window.open(whatsappUrl, "_blank");
-
-    // Show success page immediately
-    setOrderPlaced(true);
-
-    // Clear cart in background
-
   };
 
   if (!loadingCart && !orderPlaced && visibleCart.length === 0) {
@@ -475,6 +605,16 @@ export default function CheckoutPage() {
               />
 
               <input
+                type="tel"
+                name="phone"
+                placeholder="Phone Number"
+                value={formData.phone}
+                onChange={handleInputChange}
+                className="w-full px-4 py-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-amber-600"
+                required
+              />
+
+              <input
                 type="text"
                 name="address"
                 placeholder="Street Address"
@@ -527,11 +667,14 @@ export default function CheckoutPage() {
 
               <button
                 onClick={handleWhatsAppCheckout}
-                className="w-full py-3 text-white font-semibold rounded hover:opacity-90 transition mt-6"
-                style={{ backgroundColor: '#C4A57B' }}
+                disabled={isProcessing}
+                className="w-full py-3 text-white font-semibold rounded hover:opacity-90 transition mt-6 disabled:opacity-50 disabled:cursor-not-allowed"
+                style={{ backgroundColor: "#C4A57B" }}
               >
-                CONFIRM ORDER
+                {isProcessing ? "PLACING ORDER..." : "CONFIRM ORDER"}
               </button>
+
+
             </div>
           )}
 
