@@ -111,4 +111,4 @@ export const STANDARD_SHIPPING = 149;
 export const EXPRESS_SHIPPING = 249;
 
 // Tax rate
-export const TAX_RATE = 0.08;
+export const TAX_RATE = 0.00;

@@ -432,7 +432,7 @@ export default function CartPage() {
                 const itemTotal =
                   Number(remoteItem?.totalAmount) ||
                   productPrice *
-                    Number(remoteItem?.quantity || 1);
+                  Number(remoteItem?.quantity || 1);
 
                 return (
                   <article
@@ -445,10 +445,9 @@ export default function CartPage() {
                       hover:-translate-y-0.5
                       hover:shadow-lg
                       sm:p-5
-                      ${
-                        deletingId === String(item.cartId)
-                          ? 'pointer-events-none scale-[0.98] opacity-50'
-                          : ''
+                      ${deletingId === String(item.cartId)
+                        ? 'pointer-events-none scale-[0.98] opacity-50'
+                        : ''
                       }
                     `}
                     style={{
@@ -747,7 +746,7 @@ export default function CartPage() {
                       {Math.max(
                         0,
                         SHIPPING_FREE_THRESHOLD -
-                          subtotal
+                        subtotal
                       ).toFixed(2)}{' '}
                       more to get free shipping.
                     </div>
@@ -755,7 +754,7 @@ export default function CartPage() {
 
                   {/* TAX */}
 
-                  <div className="flex items-center justify-between gap-4">
+                  {/* <div className="flex items-center justify-between gap-4">
 
                     <span className="text-gray-500">
                       Tax ({Math.round(TAX_RATE * 100)}%)
@@ -765,7 +764,7 @@ export default function CartPage() {
                       ₹{tax.toFixed(2)}
                     </span>
 
-                  </div>
+                  </div> */}
 
                 </div>
 
