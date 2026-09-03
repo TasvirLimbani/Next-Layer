@@ -256,20 +256,19 @@ export default function ProductImageGallery({
   };
 
   return (
-    <div className="flex items-start gap-4">
+    <div className="flex items-start gap-4 bg-white">
       {/* Thumbnails */}
       {images.length > 1 && (
-        <div className="flex w-[110px] shrink-0 flex-col gap-2 overflow-y-auto pb-2">
+        <div className="flex w-[110px] shrink-0 flex-col gap-2 overflow-y-auto pb-2 pt-2">
           {images.map((image, idx) => (
             <button
               key={`${image}-${idx}`}
               type="button"
               onClick={() => setCurrentIndex(idx)}
-              className={`relative h-20 w-full overflow-hidden rounded-lg border-2 transition ${
-                idx === currentIndex
-                  ? 'border-amber-600'
-                  : 'border-gray-300 hover:border-amber-400'
-              }`}
+              className={`relative h-20 w-full overflow-hidden rounded-lg border-2 transition ${idx === currentIndex
+                ? 'border-amber-600'
+                : 'border-gray-300 hover:border-amber-400'
+                }`}
             >
               <Image
                 src={getImageUrl(image)}
@@ -336,75 +335,75 @@ export default function ProductImageGallery({
       </div>
 
       {/* Fullscreen */}
-   {/* Fullscreen */}
-{isFullscreen && (
-  <div
-    className="fixed left-0 right-0 top-[87px] bottom-0 z-[9999] flex items-center justify-center bg-black/70 p-2 sm:p-4"
-    onClick={() => setIsFullscreen(false)}
-  >
-    <div
-      className="relative h-full w-full max-w-6xl overflow-hidden rounded-xl bg-white shadow-2xl"
-      onClick={(e) => e.stopPropagation()}
-    >
-      {/* Close button */}
-      <button
-        type="button"
-        onClick={() => setIsFullscreen(false)}
-        className="absolute right-3 top-3 z-30 flex h-10 w-10 items-center justify-center rounded-full bg-white text-gray-800 shadow-lg transition hover:scale-105"
-        aria-label="Close image view"
-      >
-        <X size={20} />
-      </button>
-
-      {/* Full image */}
-      <div className="relative h-full w-full bg-white">
-        <Image
-          src={getImageUrl(currentImage)}
-          alt={`${productName} - fullscreen view ${currentIndex + 1}`}
-          fill
-          className="object-contain p-4 sm:p-8"
-          priority
-          sizes="100vw"
-        />
-      </div>
-
-      {/* Previous button */}
-      {images.length > 1 && (
-        <>
-          <button
-            type="button"
-            onClick={(e) => {
-              e.stopPropagation();
-              goToPrevious();
-            }}
-            className="absolute left-4 top-1/2 z-20 flex h-11 w-11 -translate-y-1/2 items-center justify-center rounded-full bg-white/95 shadow-lg transition hover:scale-105"
-            aria-label="Previous image"
+      {/* Fullscreen */}
+      {isFullscreen && (
+        <div
+          className="fixed left-0 right-0 top-[87px] bottom-0 z-[9999] flex items-center justify-center bg-black/70 p-2 sm:p-4"
+          onClick={() => setIsFullscreen(false)}
+        >
+          <div
+            className="relative h-full w-full max-w-6xl overflow-hidden rounded-xl bg-white shadow-2xl"
+            onClick={(e) => e.stopPropagation()}
           >
-            <ChevronLeft size={24} className="text-gray-900" />
-          </button>
+            {/* Close button */}
+            <button
+              type="button"
+              onClick={() => setIsFullscreen(false)}
+              className="absolute right-3 top-3 z-30 flex h-10 w-10 items-center justify-center rounded-full bg-white text-gray-800 shadow-lg transition hover:scale-105"
+              aria-label="Close image view"
+            >
+              <X size={20} />
+            </button>
 
-          {/* Next button */}
-          <button
-            type="button"
-            onClick={(e) => {
-              e.stopPropagation();
-              goToNext();
-            }}
-            className="absolute right-4 top-1/2 z-20 flex h-11 w-11 -translate-y-1/2 items-center justify-center rounded-full bg-white/95 shadow-lg transition hover:scale-105"
-            aria-label="Next image"
-          >
-            <ChevronRight size={24} className="text-gray-900" />
-          </button>
+            {/* Full image */}
+            <div className="relative h-full w-full bg-white">
+              <Image
+                src={getImageUrl(currentImage)}
+                alt={`${productName} - fullscreen view ${currentIndex + 1}`}
+                fill
+                className="object-contain p-4 sm:p-8"
+                priority
+                sizes="100vw"
+              />
+            </div>
 
-          {/* Counter */}
-          <div className="absolute bottom-4 left-1/2 z-20 -translate-x-1/2 rounded-full bg-black/70 px-4 py-2 text-sm font-medium text-white">
-            {currentIndex + 1} / {images.length}
+            {/* Previous button */}
+            {images.length > 1 && (
+              <>
+                <button
+                  type="button"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    goToPrevious();
+                  }}
+                  className="absolute left-4 top-1/2 z-20 flex h-11 w-11 -translate-y-1/2 items-center justify-center rounded-full bg-white/95 shadow-lg transition hover:scale-105"
+                  aria-label="Previous image"
+                >
+                  <ChevronLeft size={24} className="text-gray-900" />
+                </button>
+
+                {/* Next button */}
+                <button
+                  type="button"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    goToNext();
+                  }}
+                  className="absolute right-4 top-1/2 z-20 flex h-11 w-11 -translate-y-1/2 items-center justify-center rounded-full bg-white/95 shadow-lg transition hover:scale-105"
+                  aria-label="Next image"
+                >
+                  <ChevronRight size={24} className="text-gray-900" />
+                </button>
+
+                {/* Counter */}
+                <div className="absolute bottom-4 left-1/2 z-20 -translate-x-1/2 rounded-full bg-black/70 px-4 py-2 text-sm font-medium text-white">
+                  {currentIndex + 1} / {images.length}
+                </div>
+              </>
+            )}
           </div>
-        </>
+        </div>
       )}
-    </div>
-  </div>
-)}
     </div>
   );
 }
