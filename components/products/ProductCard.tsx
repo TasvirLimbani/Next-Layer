@@ -48,10 +48,10 @@ export default function ProductCard({
   const discount =
     product.originalPrice && product.originalPrice > product.price
       ? Math.round(
-          ((product.originalPrice - product.price) /
-            product.originalPrice) *
-            100
-        )
+        ((product.originalPrice - product.price) /
+          product.originalPrice) *
+        100
+      )
       : 0;
 
   /* --------------------------------------------------
@@ -158,7 +158,7 @@ export default function ProductCard({
     ) {
       throw new Error(
         data?.message ||
-          'Failed to update wishlist'
+        'Failed to update wishlist'
       );
     }
 
@@ -169,18 +169,18 @@ export default function ProductCard({
      ADD TO CART
   -------------------------------------------------- */
 
-const handleAdd = (
-  e: React.MouseEvent<HTMLButtonElement>
-) => {
-  e.preventDefault();
-  e.stopPropagation();
+  const handleAdd = (
+    e: React.MouseEvent<HTMLButtonElement>
+  ) => {
+    e.preventDefault();
+    e.stopPropagation();
 
-  if (!product.inStock) {
-    return;
-  }
+    if (!product.inStock) {
+      return;
+    }
 
-  router.push(`/shop/${productId}`);
-};
+    router.push(`/shop/${productId}`);
+  };
 
   /* --------------------------------------------------
      WISHLIST
@@ -316,11 +316,10 @@ const handleAdd = (
         {[0, 1, 2, 3, 4].map((index) => (
           <span
             key={index}
-            className={`text-[15px] leading-none ${
-              index < Math.floor(safeRating)
+            className={`text-[15px] leading-none ${index < Math.floor(safeRating)
                 ? 'text-yellow-400'
                 : 'text-gray-300'
-            }`}
+              }`}
           >
             ★
           </span>
@@ -335,8 +334,8 @@ const handleAdd = (
 
   const imageUrl = product.image
     ? `/api/image-proxy?url=${encodeURIComponent(
-        product.image
-      )}`
+      product.image
+    )}`
     : '/placeholder-product.png';
 
   return (
@@ -346,11 +345,10 @@ const handleAdd = (
       ================================================ */}
 
       <div
-        className={`relative mb-4 aspect-square w-full overflow-hidden rounded-xl bg-[#f5f5f5] ${
-          disableHoverEffects
+        className={`relative mb-4 aspect-square w-full overflow-hidden rounded-xl bg-[#f5f5f5] ${disableHoverEffects
             ? ''
             : 'transition-shadow duration-300 group-hover:shadow-md'
-        }`}
+          }`}
       >
         <Link
           href={`/shop/${productId}`}
@@ -367,11 +365,10 @@ const handleAdd = (
               (max-width: 1024px) 33vw,
               25vw
             "
-            className={`${
-              disableHoverEffects
+            className={`${disableHoverEffects
                 ? 'object-contain p-2'
                 : 'object-contain p-2 transition-transform duration-500 group-hover:scale-105'
-            }`}
+              }`}
           />
         </Link>
 
@@ -403,11 +400,10 @@ const handleAdd = (
         ============================================ */}
 
         <div
-          className={`absolute bottom-0 left-0 right-0 z-20 flex gap-2 bg-white/95 p-3 backdrop-blur-sm ${
-            disableHoverEffects
+          className={`absolute bottom-0 left-0 right-0 z-20 flex gap-2 bg-white/95 p-3 backdrop-blur-sm ${disableHoverEffects
               ? 'translate-y-0'
               : 'translate-y-full transition-transform duration-300 group-hover:translate-y-0'
-          }`}
+            }`}
         >
           {/* ADD */}
 
@@ -446,11 +442,10 @@ const handleAdd = (
               type="button"
               onClick={handleWishlist}
               disabled={isUpdatingWishlist}
-              className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-md border bg-white transition-all duration-200 disabled:opacity-50 ${
-                isWishlisted
+              className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-md border bg-white transition-all duration-200 disabled:opacity-50 ${isWishlisted
                   ? 'border-[#C4A57B] text-[#C4A57B]'
                   : 'border-gray-200 text-gray-700 hover:border-gray-400'
-              }`}
+                }`}
               aria-label={
                 isWishlisted
                   ? `Remove ${product.name} from wishlist`
@@ -495,24 +490,23 @@ const handleAdd = (
         {/* NAME */}
 
         <h3
-          className={`mb-2 line-clamp-2 min-h-[40px] text-sm font-semibold leading-5 text-gray-900 ${
-            disableHoverEffects
+          className={`mb-2 line-clamp-2 min-h-[40px] text-sm font-semibold leading-5 text-gray-900 ${disableHoverEffects
               ? ''
               : 'transition-colors duration-200 group-hover:text-[#B17D42]'
-          }`}
+            }`}
         >
           {product.name}
         </h3>
 
         {/* RATING */}
 
-        <div className="mb-3 flex items-center gap-2">
+        {/* <div className="mb-3 flex items-center gap-2">
           {renderStars(product.rating)}
 
           <span className="text-[11px] text-gray-500">
             ({product.reviews || 0})
           </span>
-        </div>
+        </div> */}
 
         {/* PRICE */}
 
