@@ -547,9 +547,9 @@ export default function Header() {
           ANNOUNCEMENT BAR
       ================================================= */}
 
-      <div className="bg-gray-100 px-3 py-2 text-center text-[11px] sm:text-xs md:text-sm text-gray-700">
+      {/* <div className="bg-gray-100 px-3 py-2 text-center text-[11px] sm:text-xs md:text-sm text-gray-700">
         Free shipping for all orders over ₹999
-      </div>
+      </div> */}
 
       {/* =================================================
           MAIN HEADER

@@ -92,12 +92,12 @@ export default function HeroCarousel() {
               </p>
 
               {/* Button */}
-              {/* <Button
+              <Button
                 className="px-8 py-3 text-lg font-semibold hover:scale-105 transition-transform"
                 size="lg"
               >
                 {slide.buttonText}
-              </Button> */}
+              </Button>
             </div>
           </div>
         </div>
